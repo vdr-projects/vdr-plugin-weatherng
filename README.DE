@@ -8,97 +8,124 @@ Latest version available at: http://beejay.vdr-developer.org/devel/
 
 See the file COPYING for license information.
 
-Description:
+===================================================================================
+
+
+=======================================================================================================
+Bevor man weiterliest und die Beispiele in weatherng.sh benutzt , erklaert man , dass man seitens "The Weather Channel",
+kurz "TWC" die Erlaubnis hat , auf deren Datei zuzugreifen und deren "Terms of Use" akzeptiert.
+Zu finden unter http://www.weather.com .
+Auch muss man fuer kopiergeschuetzte Satelitenbilder die Erlaubnis des jeweiligen Rechteinhabers,
+fuer das Herunterladen und Anzeigen, besitzen.
+========================================================================================================
+
+
+
+Beschreibung:
 
 Zeigt das Die Wettervorhersage für die nächsten 10 Tage an. 
-
-
-
-===========================================================
-!!!!ACHTUNG PLUGIN AUFRUF HAT SICH IM NAMEN GEÄNDERT!!!!!!! 
-===========================================================
 
 Der Aufruf heisst nun "-P weatherng" und nicht mehr  "-P wetter" oder "-P Weather-NG"
 
 
-
-
-
+================
 Vorraussetzungen:
 =================
 ImageMagick 6.1.6
 Internet optional ;o)
 
 
+=============
+Quickinstall:
+=============
+
+Plugin in $VDRSOURCE/PLUGINS/src/ entpacken
+Verlinken mit "weatherng" (ln -s weatherng-version weatherng)
+Fertige lib von $VDRSOURCE/PLUGINS/lib zu den anderen Plugin-libs kopieren
+Das Script weatherng.sh nach $VDR/$PLUGINCONFIG kopieren und editieren.
+Im Scrit den Parameter $SETUPCONF (Pfad zur setup.conf von VDR , zB /etc/vdr) anpassen.
+Die Wettersymbole downloaden, entpacken und das Verzeichnis!!! "images" ins selbe Verzeichnis wie "weatherng.sh" kopieren .
+VDR mit "-P weatherng" starten .
+In das Setup vom Plugin wechseln und die Einstellungen vornehmen (Standardwerte (bis auf Theme) sollten ok sein).
+Dann das Plugin "Wetterbericht" aufrufen (Internetverbindung sollte bestehen)
+Zuerst werden keine Daten angezeigt. Deshalb die Daten mit Taste OK aktualiesieren.
+Bei korrekter "weatherng.sh" sollten nun ein Wartesymbol erscheinen und die Wetterdaten/Radarmaps heruntergeladen werden.
+
+
+=============
+Tips:
+=============
+
+Hier ein paar Tips/Hinweise (Erfahrung ;)):
+Wo was erwartet wird , wird an allen Ecken ausgegeben. Zur Not mal VDR manuell von der Konsole starten
+StationID ist von WEATHER.COM zu holen und nicht woanders her (wie de.weather.com ,dwd.de).
+Unterstuetzt weather.com dein Kaff nicht , so waehle die naechstgroessere Stadt. :P
+Bei Problemen soviel Infos rausgeben wie moeglich . Ein Spruch wie : "Sehe keine Bilder" hilft niemanden und werden ignoriert
+Hilft das alles nichts , "koennte" das Weiterlesen helfen (Das Meiste sollte noch stimmen;)).
+Das Plugin sollte bei jedem laufen ab VDR-Version 1.3.17 mit korrekt installierter Imagemagick-Bibliothek
+Mit VDR-Version 1.2.x ist es nicht kompatibel.
+Das Script weatherng.sh ist extra extern gehalten , damit man es seinen eigenen Beduerfnissen anpassen kann.
+Mindesthoehe bei grosser Schrift sollte 480 sein . ansonsten kleine Schriftart waehlen.
+
+
+
+=============
 Installation:
+=============
 
 1.
 Plugin entpacken und wie gewohnt kompilieren.
 Dann die fertige lib zu den anderen Plugins kopieren.
 
-
 2.
 Die Optionen festlegen!
 
-Startet das Plugin mit den Optionen "-D"/"--data" und "I"/"--images"
+Startet das Plugin mit den Optionen "-D"/"--data"  "I"/"--images" "S"/"--script"
 
--I	Dort ist das Verzeichniss wo sich die Daten befinden zb der Images Ordner
-	Somit ist es nun möglich auch die Daten auf die CF zu laden oder auf das Ramdrive.
+-I	Dort ist das Verzeichniss wo sich der "images" Ordner befindet
+	Somit ist es nun möglich auch die images auf die CF zu laden oder auf das Ramdrive.
 
--D      Dort werden die Daten abgelegt. Es ist sinnvoll dort auch das
-        SatDownload Script abzulegen und aufzurufen, denn von dort werden
-	auch die Radarmaps eingelesen.
+-D      Dort werden die Daten abgelegt.
 
+-S      Pfad zu "weatherng.sh" (z.B.: /usr/local/bin oder dort wo man das images Verzeichnis hinkopiert hat)
 	
-Werden die Optionen nicht angeben so wird standardmaessig in $PLUGINCONFIG/weatherng
-nach Daten gesucht.
-Also wenn man den Parameter nicht angibt , so muss man das Verzeichnis "images" 
-(und nicht nur den Inhalt davon) dorthin kopieren.
+Werden die Optionen nicht angeben so wird standardmaessig in $PLUGINCONFIG/weatherng benutzt.
 
-Natuerlich muss man Zugriffsrechte auf die Verzeichnisse haben und besonders
-auf das Verzeichnis , welches man mit -D angibt, auch Schreibrechte.
 
-Also nochmal fuer Neulinge :D
+Struktur :
 Angenommen das Verzeichnis fuer die Konfigurationen der plugins liegt in
 /etc/VDR/plugins , dann muss das so aussehen fuer korrekte Funktionen :
 
 Aufrufbeispiele:
 ==================
 
-./vdr -Pweatherng 
+./vdr -P weatherng 
 
 /etc/VDR/plugins/weatherng
 /etc/VDR/plugins/weatherng/images/*.png
-/etc/VDR/plugins/weatherng/SatDownload
+/etc/VDR/plugins/weatherng/weatherng.sh
 
 
 
-./vdr -P'weatherng -I /tmp/wetter -D /mnt/Ramdisk'
+./vdr -P'weatherng -D /tmp/wetter -I /mnt/Ramdisk -S /usr/local/bin'
 
 /tmp/wetter
-/tmp/wetter/images/*.png
-/mnt/Ramdisk/SatDownload
+/mnt/Ramdisk/images/*.png
+/usr/local/bin/weatherng.sh
 
 
 3. 
-Dann muss noch das Script SatDownload (findet man im Verzeichnisn Tools) angepasst
-werden und zwar der Pfad zum Verzeichnis , wo das Plugin spaeter die Bilder erwartet.
-Im Script selber ist erklaert , was anzupassen ist. Naemlich nur der Wechsel ins
-Verzeichnis. Gibt man einen falschen Pfad bzw. anderen an , so werden die Bilder
-dort gespeichert , wo man den Befehl aufruft.
-Bevor man eingeloggt ist , ist da zumeist / , was nicht gewuenscht ist.
-Ausfuehrlicher kann ich es nicht schreiben sonst wird das kompliziert ;)
-Fuer eigene Radarmaps ist nur die URL im Script zu aendern.
-Auf keinen Fall der Dateiname.
+Dann muss noch das Script "weatherng.sh" (findet man im Verzeichnisn "examples") angepasst
+werden .
+Fuer die Beispiele muss man die Erlaubnis fuer das Herunterladen/Anzeigen besitzen oder eigene URLs eintragen.
+Auf keinen Fall ist fuer korrekte Funktion der Dateiname zu aendern.
 
-Das Verzeichnis "images" beinhaltet die Wettersymbole und muss zur Anzeige im
-Konfigurationsverzeichnis des Plugin , welches man mit --images angibt ,kopiert werden.
-Das Verzeichnis images ist nicht mehr enthalten und muss separat heruntergeladen werden.
-Laut Author der Symbole duerfen die Bilder nicht kommerziell genutzt werden und passen
-somit nicht mehr in die GPL (siehe permissions.txt im images Verzeichnis).
+Das Verzeichnis "images" beinhaltet die Wettersymbole und muss zur Anzeige in das
+Konfigurationsverzeichnis des Plugin , solange --images nicht angegeben ,kopiert werden.
 
+Dann muss man seine Einstellungen im script "weatherng.sh" machen.
 
-Im Setup Menü müsst ihr lediglich die ID eingeben, die kann man wie folg herausfinden.
+Die eigene ID kann man folgendermassen herausfinden:
 
 Ruft die Seite http://www.weather.com auf. 
 
@@ -106,14 +133,8 @@ Geb dort eure Stadt ein zb "Herne"
 
 Nach dem Suchen bekommt Ihr ein Link zur eurer Stadt, in der URL steht ein Code,
 der wie folgt aufgebaut ist 
-
 GMXX0056 (Angabe für den Ort Herne)
-
 wobei 0056 ausgetauscht wird, mit der Nummer die für den jeweiligen Ort angegeben wurde.
-
-Im Offlinemodus wird nicht aufs Internet zugegriffen.
-somit ist es moeglich die Daten auf anderen Rechner zu besorgen und
-auf einen internetfreien VDR zu kopieren.
 
 
 ____________________________________________
@@ -125,15 +146,15 @@ Im Vorhersagemodus:
 	Links= Springt ein Tag zurück
 	Rechts = Springt ein Tag vor
 	5,Rot,Gruen,Gelb,Blau = Zeigt Satelitenbilder an
-	
+	1  = Anzeige fuer Station ID 1     
+	2  = Anzeige fuer Station ID 2     
+	3  = Anzeige fuer Station ID 3     
+	Ok = Downlaod/Aktualisuerung der Wetterdaten/Satelitenbilder (soweit weatherng.sh geaendert wurde)
 
 Im Satelitenmodus:
 	"zurück" = Kommt wieder in den Vorhersagemodus
 
 
 Todo:
-        Bugfixing
-	Entschlacken von Code
 	Animiertes Satelitenbild
-	I18n
 	

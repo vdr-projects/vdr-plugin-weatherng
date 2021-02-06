@@ -3,19 +3,15 @@
 
 #include <vdr/plugin.h>
 #include "i18n.h"
-//#include "parser.h"
 #include <string>
 #include <vector>
 #include <vdr/osd.h>
 #include "OsdWeather.h"
 #include "i18n.h"
 
-static const char *VERSION        = "0.0.5";
-static const char *DESCRIPTION    = "Weather forecast";
+static const char *VERSION        = "0.0.8-pre3";
+static const char *DESCRIPTION    = "Weather.com: Weather forecast";
 static const char *MAINMENUENTRY  = "Weather-NG";
-
-static const char *ALLOWED_STATION_CHARS 	= "abcdefghijklmnopqrstuvwxyz0123456789";
-//static const char hex[] = { "0123456789abcdef" };
 
 class cPluginWetter : public cPlugin {
 private:
@@ -41,9 +37,7 @@ public:
 class cMenuWetterSetup : public cMenuSetupPage {
 	private:
                 const char *themes[eWetterThemeMaxNumber];
-		virtual void Setup(void);
 	protected:
-	        virtual eOSState ProcessKey(eKeys Key);
 		virtual void Store(void);
 	public:
   		cMenuWetterSetup(void);

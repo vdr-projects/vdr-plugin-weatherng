@@ -7,6 +7,15 @@
 # This name will be used in the '-P...' option of VDR to load the plugin.
 # By default the main source file also carries this name.
 #
+
+HAVE_IMLIB2=1
+#HAVE_MAGICK=1
+
+
+# UNCOMMENT THIS , IF YOU OWN A MODDED 4MB FF-CARD
+#HAVE_4MB=1
+
+
 PLUGIN = weatherng
 
 ### The version number of this plugin (taken from the main source file):
@@ -40,19 +49,29 @@ PACKAGE = vdr-$(ARCHIVE)
 
 ### Includes and Defines (add further entries here):
 
+ifdef HAVE_IMLIB2 
+	DEFINES += -DHAVE_IMLIB2
+	LIBS += -lImlib2
+endif
+
+ifdef HAVE_MAGICK 
+	DEFINES += -DHAVE_MAGICK
+	LIBS += -lMagick -lMagick++
+endif
+
+ifdef HAVE_4MB
+	DEFINES += -DHAVE_4MB
+endif
+
 INCLUDES += -I$(VDRDIR)/include -I$(DVBDIR)/include
 
 DEFINES += -D_GNU_SOURCE -DPLUGIN_NAME_I18N='"$(PLUGIN)"'
 
 ### The object files (add further files here):
 
-OBJS =  contrib/HttpGetSocket.o contrib/HttpsGetSocket.o contrib/SocketHandler.o contrib/Parse.o \
-	contrib/HTTPSocket.o contrib/Socket.o contrib/TcpSocket.o contrib/Utility.o contrib/PoolSocket.o\
-	contrib/CircularBuffer.o contrib/SocketThread.o contrib/Thread.o contrib/Base64.o\
+OBJS =  bitmap.o quantize.o imagecache.o\
 	\
-	img/bitmap.o \
-	\
-	$(PLUGIN).o xml.o parsing.o getdata.o OsdWeather.o setup.o i18n.o vars.o\
+	$(PLUGIN).o xml.o parsing.o OsdWeather.o setup.o i18n.o vars.o\
 	 
 
 ### Implicit rules:
@@ -75,7 +94,7 @@ $(DEPFILE): Makefile
 all: libvdr-$(PLUGIN).so
 
 libvdr-$(PLUGIN).so: $(OBJS)
-	$(CXX) $(CXXFLAGS) -lMagick -lMagick++ -shared $(OBJS) -o $@
+	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(LIBS) -o $@
 	@cp $@ $(LIBDIR)/$@.$(VDRVERSION)
 
 dist: clean

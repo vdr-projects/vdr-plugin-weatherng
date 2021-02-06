@@ -18,15 +18,26 @@ struct cWetterSetup
 {
 public:
  cWetterSetup(void);
- char stationId[9];
+ int w_update;
  int w_left;
  int w_top;
  int w_width;
  int w_height;
- int w_rcolor;
+#ifdef HAVE_4MB
+ int w_hicolor;
+#endif
  int w_fontsize;
- int w_offline;
  int w_theme;
+ int w_osdoffset_x;
+ int w_osdoffset_y;
+ int w_inverted;
+ int w_corner;
+ int w_dither;
+ int w_alpha;
+#ifdef HAVE_MAGICK 
+ int w_treedepth;
+ int w_maxcachefill;
+#endif
 };
 
 extern cWetterSetup wetterSetup;
@@ -38,15 +49,18 @@ enum eWetterThemes
  eWetterThemeMoronimo,
  eWetterThemeDeepBlue,
  eWetterThemeEnigma,
+ eWetterThemeSilverGreen,
+ eWetterThemeMoronimoMKII,
  eWetterThemeMaxNumber
  };
 
 struct cWetterTheme
 {
  int clrBackground;
- int clrFgHiColor;
- int clrFgLowColor;
+ int clrBgBorder;
+ int clrFgBorder;
  int clrFgText;
+ int clrFgHiTemp;
 };
 
 extern const cWetterTheme wetterTheme[eWetterThemeMaxNumber];
