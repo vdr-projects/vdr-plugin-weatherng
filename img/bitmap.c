@@ -16,7 +16,7 @@ cBitmap* LoadMagick(const char *Filename, int height, int width, int colors, boo
 			printf("ERROR: text2skin: Couldn't load %s\n:w", Filename);
 			return NULL;
 		}
-		//mDelay = images[0].animationDelay() * 10;
+//		mDelay = images[0].animationDelay() * 10;
 		for (it = images.begin(); it != images.end(); ++it) {
 			if (colors != 0){
 				(*it).opacity(OpaqueOpacity);

@@ -2,5 +2,5 @@
 #define VARS_H
 
 extern char *DestinationDir;
-extern char *ScriptTarget;
+//extern char *ScriptTarget;
 #endif

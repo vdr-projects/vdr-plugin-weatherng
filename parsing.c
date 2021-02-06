@@ -167,7 +167,7 @@ bool xEndElem(const std::string &name) {
 }
 
 
-void cxmlParse::xmlParse(int daycount, std::string plugindir,int inDPart) {
+void cxmlParse::xmlParse(int daycount, std::string DestinationDir,int inDPart) {
 	/*std::string url="http://xoap.weather.com/weather/local/";
   	url=url + code ;
   	url=url + "?cc=*&unit=m&dayf=4&prod=xoap&par=1004124588&key=079f24145f208494";
@@ -178,7 +178,7 @@ void cxmlParse::xmlParse(int daycount, std::string plugindir,int inDPart) {
 	else{*/
 		//context.clear();
 		
-		XML xml(plugindir + "/daten.dat");
+		XML xml(DestinationDir + "/daten.dat");
 		xml.nodeStartCB(xStartElem);
 		xml.nodeEndCB(xEndElem);
 		xml.cdataCB(xCharData);

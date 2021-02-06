@@ -1,11 +1,30 @@
 #!/bin/bash
 
-# Many thanks at Gonz for this Script
-# :)
+#URL=http://image.weather.com/images/sat/germany_sat_720x486.jpg
 
-URL=http://image.weather.com/images/sat/germany_sat_720x486.jpg
-while :  
-        do wget -O $1/sat.tmp $URL 
-        cp $1/sat.tmp $1/sat.jpg	
-	sleep 1800;
-done &
+# Overall Press "KEY 5"
+#URL=http://www.wetter.net/images/sat/sateuropa2_g.jpg
+#URL=http://eur.yimg.com/w/wcom/eur_germany_outlook_DE_DE_440_dmy_y.jpg
+URL=http://www.dwd.de/scripts/getimg.php?src=/wundk/Wetter.jpg
+
+# Weather tomorrow - Press "KEY RED"
+URL1=http://www.wetter24.de/automatic/brd_tag_n+ww00002.jpg
+
+# Wind tomorrow -  Press "KEY GREEN"
+URL2=http://www.wetter24.de/automatic/brd_tag_dd00002.jpg
+
+# Temperature tomorrow -  PRESS "KEY YELLOW"
+URL3=http://www.wetter24.de/automatic/brd_tag_tt00002.jpg
+
+# Rain/snow tomorrow - PRESS "KEY BLUE"
+URL4=http://www.wetter24.de/automatic/brd_tag_rr00002.jpg
+
+# Animated radarmap as mpg "uncomment it only if you need it"
+ANI=http://www.wetterzentrale.de/pics/sat.mpg
+
+          wget --tries=4 --timeout=20 -O overall.wet "$URL"
+          wget --tries=4 --timeout=20 -O pic1.wet $URL1
+          wget --tries=4 --timeout=20 -O pic2.wet $URL2
+          wget --tries=4 --timeout=20 -O pic3.wet $URL3
+          wget --tries=4 --timeout=20 -O pic4.wet $URL4
+#          wget --tries=4 --timeout=20 -O Wetteranimation.mpg  $ANI

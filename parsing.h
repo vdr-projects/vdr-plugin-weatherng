@@ -20,7 +20,7 @@ public:
 	//bool xEndElem(const std::string &name);
 	//bool xStartElem(const std::string &name, std::map<std::string, std::string> &attrs);
 	//static	std::vector<std::string> context;
-	void xmlParse(int daycount, std::string plugindir,int inDPart);
+	void xmlParse(int daycount, std::string DestinationDir,int inDPart);
 	std::string parameter[6][5];
 	std::string dayname,date,ort,sunrise,sunset,hi,low,wetter,icon;
 };

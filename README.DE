@@ -1,0 +1,113 @@
+This is a "plugin" for the Video Disk Recorder (VDR).
+
+Written by:                  Sascha Bajonczak <BEE-JAY@gmx.net>
+
+Project's homepage:          http://beejay.vdr-developer.org/devel/
+
+Latest version available at: http://beejay.vdr-developer.org/devel/
+
+See the file COPYING for license information.
+
+Description:
+
+Zeigt das Die Wettervorhersage für die nächsten 10 Tage an. 
+
+
+
+===========================================================
+!!!!ACHTUNG PLUGIN AUFRUF HAT SICH IM NAMEN GEÄNDERT!!!!!!! 
+===========================================================
+
+Der aufruf heist nun "-P weathern" und nicht mehr  "-P wetter" oder "-P Weather-NG"
+
+
+
+
+
+Vorraussetzungen:
+=================
+ImageMagick 6.1.6
+Internet ;o)
+
+
+Installation:
+
+1.
+Plugin entpacken und wie gewohnt kompilieren.
+Dann die fertige lib zu den anderen Plugins kopieren.
+
+
+2.
+Die Optionen festlegen!
+
+Startet das Plugin mit den Optionen "-D" oder "--dest"
+
+-D	Dort ist das Verzeichniss wo sich die Daten befinden zb der Images Ordner
+	Somit ist es nun möglich auch die Daten auf die CF zu laden oder auf das Ramdrive.
+	
+Wird die Option nicht angeben so wird automatisch ein Verzeichnis in eurem
+Plugin-Verzeichnis erstellt. also z.B.: $VDRCONFIG/plugins/weatherng.
+Also wenn man den Parameter nicht angibt , so muss man das Verzeichnis "images" 
+(und nicht nur den Inhalt davon) dorthin kopieren.
+
+Also nochmal fuer Neulinge :D
+Angenommen das Verzeichnis fuer die Konfigurationen der plugins liegt in
+/VDR/etc/plugins , dann muss das so aussehen fuer korrekte Funktionen :
+
+Aufrufbeispiele:
+==================
+
+./vdr -Pweatherng 
+
+/VDR/etc/plugins/weatherng
+/VDR/etc/plugins/weatherng/images/*.png
+/VDR/etc/plugins/weatherng/SatDownload
+
+
+
+./vdr -P'weatherng -D /tmp/wetter'
+
+/tmp/wetter
+/tmp/wetter/images/*.png
+/tmp/wetter/SatDownload
+
+
+!!!!!!Danke hierfür nochmal an Gonz für das Script :)!!!
+
+3. 
+Im Setup Menü müsst ihr lediglich die ID eingeben, die kann man wie folg herausfinden.
+
+Ruft die Seite http://www.weather.com auf. 
+
+Geb dort eure Stadt ein zb "Herne"
+
+Nach dem Suchen bekommt Ihr ein Link zur eurer Stadt, in der URL steht ein Code,
+der wie folgt aufgebaut ist 
+
+GMXX0056 (Angabe für den Ort Herne)
+
+wobei 0056 ausgetauscht wird, mit der Nummer die für den jeweiligen Ort angegeben wurde.
+
+
+
+____________________________________________
+Bedienung.
+
+Im Vorhersagemodus:
+	Auf = Zeigt die Wettervorhersage für die Nacht an.
+	Ab  = Zeigt die Wettervorhersage für den Tag an.
+	Links= Springt ein Tag zurück
+	Rechts = Springt ein Tag vor
+	5,Rot,Gruen,Gelb,Blau = Zeigt Satelitenbilder an
+	
+
+Im Satelitenmodus:
+	"zurück" = Kommt wieder in den Vorhersagemodus
+
+
+Todo:
+        Bugfixing
+	Entschlacken von Code
+	Animiertes Satelitenbild
+	I18n
+	

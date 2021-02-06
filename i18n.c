@@ -9,6 +9,42 @@
 #include "i18n.h"
 
 const tI18nPhrase Phrases[] = {
+  { "Weather-NG",
+    "Wetterbericht",
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "Привет!",
+  },
+  { "Weather forecast",
+    "Zeigt einem das Wetter an",
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "Привет!",
+  },
   { "Weather",
     "Wetter",
     "",// TODO
@@ -27,8 +63,8 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "Привет!",
   },
-  { "Tag vor -->",
-    "Day forward -->",
+  { "Day forward -->",
+    "Tag vor -->",
     "",// TODO
     "",// TODO
     "",// TODO
@@ -45,8 +81,8 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "Привет!",
   },
-  { "<-- Tag zurќck",
-    "<-- Day backward",
+  { "<-- Day backward",
+    "<-- Tag zurќck",
     "",// TODO
     "",// TODO
     "",// TODO
@@ -63,8 +99,8 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "Привет!",
   },
-  { "Angaben fќr den Ort",
-    "",
+  { "Information about country",
+    "Angaben fќr den Ort",
     "",// TODO
     "",// TODO
     "",// TODO
@@ -81,8 +117,8 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "Привет!",
   },
-  { "Sonnenuntergang: ",
-    "backward",
+  { "Sunset: ",
+    "Sonnenuntergang: ",
     "",// TODO
     "",// TODO
     "",// TODO
@@ -99,8 +135,8 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "Привет!",
   },
-  { "Sonnenaufgang: ",
-    "backward",
+  { "Sunrise: ",
+    "Sonnenaufgang: ",
     "",// TODO
     "",// TODO
     "",// TODO
@@ -117,8 +153,8 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "Привет!",
   },
-  { "Wetter: ",
-    "backward",
+  { "Weather: ",
+    "Wetter: ",
     "",// TODO
     "",// TODO
     "",// TODO
@@ -136,7 +172,7 @@ const tI18nPhrase Phrases[] = {
     "Привет!",
   },
   { "АC",
-    "backward",
+    "АC",
     "",// TODO
     "",// TODO
     "",// TODO
@@ -153,8 +189,8 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "Привет!",
   },
-  { "Tiefsttemperatur: ",
-    "backward",
+  { "Low temperature: ",
+    "Tiefsttemperatur: ",
     "",// TODO
     "",// TODO
     "",// TODO
@@ -171,8 +207,8 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "Привет!",
   },
-  { "Hіchsttemperatur: ",
-    "backward",
+  { "High temperature: ",
+    "Hіchsttemperatur: ",
     "",// TODO
     "",// TODO
     "",// TODO
@@ -189,8 +225,8 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "Привет!",
   },
-  { "Wetter fќr: ",
-    "backward",
+  { "Weather for: ",
+    "Wetter fќr: ",
     "",// TODO
     "",// TODO
     "",// TODO
@@ -207,6 +243,167 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "Привет!",
   },
-
+  { "Navigation",
+    "Navigation",
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "Привет!",
+  },
+  { "Up=Weather at night",
+    "Auf=Wetter Nacht",
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "Привет!",
+  },
+  { "Down=Weather at day",
+    "Ab=Wetter Tag",
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "Привет!",
+  },
+  { "Station ID",
+    "Station ID",
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "Привет!",
+  },
+  { "Radar left",
+    "Radarbild von links",
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "Привет!",
+  },
+  { "Radar top",
+    "Radarbild von oben",
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "Привет!",
+  },
+  { "Radar width",
+    "Radarbild Breite",
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "Привет!",
+  },
+  { "Radar height",
+    "Radarbild Hoehe",
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "Привет!",
+  },
+  { "Use small fonts",
+    "Kleine Schriftart nutzen",
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "Привет!",
+  },
   { NULL }
   };

@@ -11,7 +11,12 @@
 class cWetterSetup {
 	public:
 		char stationId[9];
+		int w_left;
+		int w_top;
+		int w_width;
+		int w_height;
 		cWetterSetup(void);
+		int w_fontsize;
 };
 
-
+//extern char *DestinationDir;

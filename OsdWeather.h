@@ -3,11 +3,17 @@
 #include <string>
 #include <vdr/plugin.h>
 #include "setup.h"
+
 class cWetterOsd : public cOsdObject {
 private:
-  std::string code,file,plugindir;
+  std::string code,file;
   cOsd *osd;
   int day;
+  int Radar_left;
+  int Radar_top;
+  int Radar_width;
+  int Radar_height;
+  bool fontsize;
   tColor color;
   cWetterSetup *setup;
 public:

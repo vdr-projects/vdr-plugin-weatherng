@@ -142,7 +142,6 @@ bool xEndElem(const std::string &name) {
 
 void xmlParse(std::string code) {
 	std::string url="http://xoap.weather.com/weather/local/";
-  	std::string plugindir = cPlugin::ConfigDirectory("weatherng");
 	url=url + code ;
   	url=url + "?cc=*&unit=m&dayf=10&prod=xoap&par=1004124588&key=079f24145f208494";
 	printf("Destination Dir:  %s\n",DestinationDir);
@@ -151,20 +150,20 @@ void xmlParse(std::string code) {
 	}
 	else{
 		context.clear();
-		XML xml(plugindir + "/daten.dat");
+		XML xml(DestinationDir + "/daten.dat");
 		xml.nodeStartCB(xStartElem);
 		xml.nodeEndCB(xEndElem);
 		xml.cdataCB(xCharData);
 		if (xml.parse() != 0) {
 		}else{
-			printf("Stadt: %s\n",town.c_str());
+			printf("Country: %s\n",town.c_str());
 			for (int x=count;0<x;x--){
 
 				printf("Sunrise(%i):\t %s\n",x,param[x][0].c_str());
 				printf("Sunset(%i):\t %s\n",x,param[x][1].c_str());
 				printf("Hi(%i):\t\t %s\n",x,param[x][2].c_str());
 				printf("Low(%i):\t\t %s\n",x,param[x][3].c_str());
-				printf("Wetter(%i):\t %s\n",x,param[x][4].c_str());
+				printf("Weather(%i):\t %s\n",x,param[x][4].c_str());
 				printf("Icon(%i):\t %s\n",x,param[x][5].c_str());
 			}
 		}
