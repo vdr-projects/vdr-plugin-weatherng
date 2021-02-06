@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Many thanks at Gonz for this Script
+# :)
+
+URL=http://image.weather.com/images/sat/germany_sat_720x486.jpg
+while :  
+        do wget -O $1/sat.tmp $URL 
+        cp $1/sat.tmp $1/sat.jpg	
+	sleep 1800;
+done &

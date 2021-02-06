@@ -1,0 +1,95 @@
+This is a "plugin" for the Video Disk Recorder (VDR).
+
+Written by:                  Sascha Bajonczak <BEE-JAY@gmx.net>
+
+Project's homepage:          http://beejay.vdr-developer.org/devel/
+
+Latest version available at: http://beejay.vdr-developer.org/devel/
+
+See the file COPYING for license information.
+
+Description:
+
+Zeigt das Die Wettervorhersage für die nächsten 10 Tage an. 
+
+
+
+
+!!!!ACHTUNG PLUGIN AUFRUF HAT SICH IM NAMEN GEÄNDERT!!!!!!! 
+
+Der aufruf heist nun "-P Weather-NG" und nicht mehr  "-P wetter"
+
+
+
+
+
+Vorraussetzungen:
+
+ImageMagick 6.1.6
+Internet ;o)
+
+
+Installation:
+
+1. 
+Im Setup Menü müsst ihr lediglich die ID eingeben, die kann man wie folg herausfinden.
+
+Ruft die Seite http://www.weather.com auf. 
+
+Geb dort eure Stadt ein zb "Herne"
+
+Nach dem Suchen bekommt Ihr ein Link zur eurer Stadt, in der URL steht ein Code,
+der wie folgt aufgebaut ist 
+
+GMXX0056 (Angabe für den Ort Herne)
+
+wobei 0056 ausgetauscht wird, mit der Nummer die für den jeweiligen Ort angegeben wurde.
+
+
+2.
+!NEU! Die Optionen festlegen!
+
+Startet das Plugin mit den Optionen S und D
+
+-S 	Ort wo die Datei SatDownload liegt
+
+-D	Dort ist das Verzeichniss wo sich die Daten befinden zb der Images Ordner
+	Somit ist es nun möglich auch die Daten auf die CF zu laden oder auf das Ramdrive.
+	
+Diese Optionen müssen angegeben werden und sind nicht Optional!
+
+aufrufbeispiel
+
+./vdr -P'Weather-NG -D /tmp/wetter -S /tmp/wetter/SatDownload'
+
+
+Den Orner "Images" ins Verzeichniss reinkoppieren, welches ihr mit der -D option angegeben habt.
+	
+	in meinem Beispiel 
+	
+	/tmp/wetter
+
+
+
+
+!!!!!!Danke hierfür nochmal an Gonz für das Script :)!!!
+
+____________________________________________
+Bediehnung.
+
+Im vorhersage- Modus:
+	Auf = Zeigt die Wettervorhersage für die Nacht an.
+	Ab  = Zeigt die Wettervorhersage für den Tag an.
+	Links= Springt ein Tag zurück
+	Rechts = Springt ein Tag vor
+	5 = Zeigt das Satelitenbild an
+
+Im Satelitenmodus:
+	"zurück" = Kommt wieder in den Vorhersagemodus
+
+
+4:
+Todo:
+	Animiertes Satelitenbild
+	I18n
+	

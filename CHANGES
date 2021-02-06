@@ -1,0 +1,17 @@
+Ver. 0.0.2
+	Bugfixes for new Weather.com Version
+
+Ver. 0.0.3
+       
+	-Bugfixes
+	
+	-New Colorshema
+	
+	-Added 2 needet Options
+	
+		-D /path/to/DataDir
+		-S /path/to/SatDownload
+
+	-SatDownload Script is started from plugin, and don't need a manual start
+	
+	 

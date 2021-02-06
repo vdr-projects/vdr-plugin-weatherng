@@ -1,0 +1,12 @@
+--22:37:33--  http://image.weather.com/images/sat/germany_sat_720x486.jpg
+           => `germany_sat_720x486.jpg.4'
+Resolving image.weather.com... done.
+Connecting to image.weather.com[63.111.24.21]:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 61,261 [image/jpeg]
+
+    0K .......... .......... .......... .......... .......... 83%    1.93 KB/s
+   50K .........                                             100%    9.59 MB/s
+
+22:38:03 (2.31 KB/s) - `germany_sat_720x486.jpg.4' saved [61261/61261]
+

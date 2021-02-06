@@ -1,0 +1,15 @@
+VDR Plugin 'wetter' Revision History
+------------------------------------
+
+2005-01-10: Version 0.0.1
+
+- Initial revision.
+
+
+Version: 0.0.2
+
+- 	Change some Color changes
+- 	Now you can define your own Target Directory with the -D option
+	for example ./vdr -P'wetter -D /tmp/wetter'  
+	be sure you have write access to this directory
+-	Add the "-S" Option to set the source of the SatDownload Script
