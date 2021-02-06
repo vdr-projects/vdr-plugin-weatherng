@@ -40,21 +40,5 @@ bool Get(const std::string& url_in,const std::string& file)
 		return s.Complete();
 	}
 	else
-/*	if (!strcasecmp(protocol.c_str(),"https"))
-	{
-		HttpsGetSocket s(h,host,port ? port : 443,url,file);
-		h.Add(&s);
-		h.Select(1,0);
-		while (h.GetCount())
-		{
-			h.Select(1,0);
-		}
-		return s.Complete();
-	}
-	else
-	{
-		printf("Unknown protocol: '%s'\n",protocol.c_str());
-	}
-*/
 	return false;
 }

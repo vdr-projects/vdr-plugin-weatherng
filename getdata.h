@@ -1,5 +1,5 @@
-#ifndef GETDATA_H
-#define GETDATA_H
+#ifndef __GETDATA_H
+#define __GETDATA_H
 
 
 #include <string>
@@ -10,4 +10,4 @@ bool Get(const std::string& url_in, const  std::string& file);
 
 
 
-#endif
+#endif //__GETDATA_H

@@ -1,15 +1,48 @@
-VDR Plugin 'wetter' Revision History
-------------------------------------
+Ver. 0.0.5
 
-2005-01-10: Version 0.0.1
+	-Navigational crash bug fixed (Rolf Ahrenberg)
+	-Finnish translation (Rolf Ahrenberg)
+	-i18n
+	-OSD is themable now
+	-restructure the OSD
+	-Clean up code again
+	-Changed commandline option --dest to --data
+	-better weathericons, which not included anymore due restriction of author
+	        (no more "too much colors in use")
+	-alot more...
 
-- Initial revision.
+Ver. 0.0.4
+
+	-more Bugfixes
+	-Option -S (deprecated)
+	-Commandline parameter -D or --dest now optional
+	-Some setup options (font , size , ...)
+	-Eyecandy
+	-SatDownoad script dont run endless anymore
+	-5! Radarmaps now
+	-New initialization
+	-begin i18n (not completed, help welcome)
+	-Offlinemode
+	-Radarmaps are sizable
+	-256 color support for 4mb modded cards
+	-SatDownload script extern again
+	-...
 
 
-Version: 0.0.2
+Ver. 0.0.3
+       
+	-Bugfixes
+	-New Colorshema
+	-Added 2 needed options
+		-D /path/to/DataDir
+		-S /path/to/SatDownload
+	-SatDownload script is started from plugin, and don't need a manual start
+	
 
-- 	Change some Color changes
-- 	Now you can define your own Target Directory with the -D option
-	for example ./vdr -P'wetter -D /tmp/wetter'  
-	be sure you have write access to this directory
--	Add the "-S" Option to set the source of the SatDownload Script
+Ver. 0.0.2
+	Bugfixes for new Weather.com Version
+
+
+2005-01-10: Ver. 0.0.1
+        -Initial revision
+       		 

@@ -1,8 +1,13 @@
-#ifndef WEATHER_OSD_H
-#define WEATHER_OSD_H
+#ifndef __OSDWEATHER_H
+#define __OSDWEATHER_H
+
 #include <string>
+#include <vdr/thread.h>
 #include <vdr/plugin.h>
+#include <vdr/status.h>
+//#include <vdr/thread.h>
 #include "setup.h"
+
 
 class cWetterOsd : public cOsdObject {
 private:
@@ -13,15 +18,19 @@ private:
   int Radar_top;
   int Radar_width;
   int Radar_height;
+  bool radarcolor;
   bool fontsize;
-  tColor color;
-  cWetterSetup *setup;
+  bool Offlinemode;
+
+//protected:
+//  virtual void Action(void);
+
 public:
-  cWetterOsd(cWetterSetup *setup);
+  cWetterOsd(void);
   ~cWetterOsd();
   void Satelite(void);
   virtual void Show(void);
   virtual eOSState ProcessKey(eKeys Key);
   };
 
-#endif
+#endif //__OSDWEATHER_H

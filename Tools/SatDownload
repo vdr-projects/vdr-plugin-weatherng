@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Many thanks at Gonz for this Script
+# :)
+
 #URL=http://image.weather.com/images/sat/germany_sat_720x486.jpg
 
 # Overall Press "KEY 5"
@@ -22,9 +25,22 @@ URL4=http://www.wetter24.de/automatic/brd_tag_rr00002.jpg
 # Animated radarmap as mpg "uncomment it only if you need it"
 ANI=http://www.wetterzentrale.de/pics/sat.mpg
 
+
+# First go to the location where you want to place the files.
+# TYPE HERE YOUR OWN PATH
+# PFAD MUSS DEN EIGENEN BEDUERFNISSEN ANGEPASST WERDEN ; SONST FUNTZ DAS NICHT
+# Wenn man den Parameter --images uebergibt , so muss hier der gleich Pfad
+# stehen .!!
+# DANN FOLGENDES IN commands.conf EINTRAGEN:
+#   Wetter aktualisieren : at -f "/dein_pfad_zu_SatDownload/SatDownload" now
+
+cd /VDR/etc/plugins/weatherng;
+
           wget --tries=4 --timeout=20 -O overall.wet "$URL"
           wget --tries=4 --timeout=20 -O pic1.wet $URL1
           wget --tries=4 --timeout=20 -O pic2.wet $URL2
           wget --tries=4 --timeout=20 -O pic3.wet $URL3
           wget --tries=4 --timeout=20 -O pic4.wet $URL4
 #          wget --tries=4 --timeout=20 -O Wetteranimation.mpg  $ANI
+
+svdrpsend.pl MESG "Wetterdownload abgeschlossen und Daten aktualisiert"

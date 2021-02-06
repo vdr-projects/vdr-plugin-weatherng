@@ -1,6 +1,7 @@
-#ifndef VARS_H
-#define VARS_H
+#ifndef __VARS_H
+#define __VARS_H
 
-extern char *DestinationDir;
-//extern char *ScriptTarget;
-#endif
+extern char *DataDir;
+extern char *ImageDir;
+
+#endif //__VARS_H

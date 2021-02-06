@@ -13,3 +13,26 @@ Description:
 Weather forecast 
 
 For now take a look in the german README.DE ;)
+
+short:
+
+Commandline parameters : -D --data  -I --images
+
+-D = Path to your data (daten.dat)
+-I = Path to "directory" of images
+
+If you dont set parameters , the default is:
+$PLUGINCONFIG/weatherng
+
+structure:
+$PLUGINCONFIG/weatherng
+$PLUGINCONFIG/weatherng/images/
+$PLUGINCONFIG/weatherng/daten.dat
+
+Key RIGHT                    : day forward
+Key LEFT                     : previous day
+Key UP                       : weather at night
+Key DOWN                     : weather at day
+Key 5,RED,GREEN,YELLOW,BLUE  : radarmaps
+
+For own radarmaps change the URLs in SatDonload.

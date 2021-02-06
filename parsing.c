@@ -12,19 +12,19 @@
 
 
 #define TAG_ERR_REMAIN(_context) do { \
-                esyslog("ERROR: Text2Skin: Unexpected tag %s within %s", \
+                esyslog("ERROR: Weatherng: Unexpected tag %s within %s", \
                                 name.c_str(), _context); \
                 return false; \
         } while (0)
 
 #define TAG_ERR_CHILD(_context) do { \
-                esyslog("ERROR: Text2Skin: No child tag %s expected within %s", \
+                esyslog("ERROR:  Weatherng: No child tag %s expected within %s", \
                                 name.c_str(), _context); \
                 return false; \
         } while (0)
 
 #define TAG_ERR_END(_context) do { \
-                esyslog("ERROR: Text2Skin: Unexpected closing tag for %s within %s", \
+                esyslog("ERROR:  Weatherng: Unexpected closing tag for %s within %s", \
                                 name.c_str(), _context); \
                 return false; \
         } while (0)
@@ -36,7 +36,7 @@
 #define ATTRIB_MAN_STRING(_attr,_target) \
         ATTRIB_OPT_STRING(_attr,_target) \
         else { \
-                esyslog("ERROR: Text2Skin: Mandatory attribute %s missing in tag %s", \
+                esyslog("ERROR:  Weatherng: Mandatory attribute %s missing in tag %s", \
                                 _attr, name.c_str()); \
                 return false; \
         }
@@ -44,7 +44,7 @@
 #define ATTRIB_MAN_NUMBER(_attr,_target) \
         ATTRIB_OPT_NUMBER(_attr,_target) \
         else { \
-                esyslog("ERROR: Text2Skin: Mandatory attribute %s missing in tag %s", \
+                esyslog("ERROR:  Weatherng: Mandatory attribute %s missing in tag %s", \
                                 _attr, name.c_str()); \
                 return false; \
         }
@@ -52,7 +52,7 @@
 #define ATTRIB_OPT_FUNC(_attr,_func) \
         if (attrs.find(_attr) != attrs.end()) { \
                 if (!_func(attrs[_attr])) { \
-                        esyslog("ERROR: Text2Skin: Unexpected value %s for attribute %s", \
+                        esyslog("ERROR:  Weatherng: Unexpected value %s for attribute %s", \
                                         attrs[_attr].c_str(), _attr); \
                         return false; \
                 } \
@@ -61,7 +61,7 @@
 #define ATTRIB_MAN_FUNC(_attr,_func) \
         ATTRIB_OPT_FUNC(_attr,_func) \
         else { \
-                esyslog("ERROR: Text2Skin: Mandatory attribute %s missing in tag %s", \
+                esyslog("ERROR: Weatherng: Mandatory attribute %s missing in tag %s", \
                                 _attr, name.c_str()); \
                 return false; \
         }
@@ -85,7 +85,7 @@ bool xStartElem(const std::string &name, std::map<std::string, std::string> &att
 			dpart=1;
 		}
 	}
-        if (name=="sunr" || name=="suns" || name=="icon" || name=="dnam" || name=="hi" || name=="low"){
+        if (name=="sunr" || name=="suns" || name=="icon" || name=="dnam" || name=="hi" || name=="low" || name=="ppcp" || name=="hmid" || name=="t" || name=="s") {
                 locked=false;
         }
 
@@ -94,12 +94,14 @@ bool xStartElem(const std::string &name, std::map<std::string, std::string> &att
 		IsWind=true;
 	}
 	if(name=="day"){
-		count++;
-		ATTRIB_MAN_STRING("t",param[count][6][0]);
-		param[count][6][1]=param[count][6][0].c_str();
-		ATTRIB_MAN_STRING("dt",param[count][7][0]);
-		param[count][7][1]=param[count][7][0].c_str();
-		IsDay=true;
+		if (++count < 255) {
+			ATTRIB_MAN_STRING("t",param[count][6][0]);
+			param[count][6][1]=param[count][6][0].c_str();
+			ATTRIB_MAN_STRING("dt",param[count][7][0]);
+			param[count][7][1]=param[count][7][0].c_str();
+			IsDay=true;
+			
+		}
 	}
 	context.push_back(name);
 	return true;
@@ -110,6 +112,16 @@ bool xCharData(const std::string &text) {
 		if (context[context.size()-1]=="t" && IsWind==false  && IsDay==true){
 			param[count][4][dpart]=text.c_str();
                 }
+
+		if (context[context.size()-1]=="t" && IsWind==true  && IsDay==true){
+			param[count][8][0]=text.c_str();
+			param[count][8][1]=text.c_str();
+                }
+
+		if (context[context.size()-1]=="s" && IsWind==true  && IsDay==true){
+			param[count][9][0]=text.c_str();
+			param[count][9][1]=text.c_str();
+                }
 		if (context[context.size()-1]=="hi" && IsDay==true){
                         printf("hi Wert: %s\n",text.c_str());
 			param[count][2][0]=text.c_str();
@@ -117,7 +129,7 @@ bool xCharData(const std::string &text) {
 
 		}
                 if (context[context.size()-1]=="low" && IsDay==true){
-                        param[count][3][0]=text.c_str();
+                    param[count][3][0]=text.c_str();
                 	param[count][3][1]=text.c_str();
 		}
 
@@ -140,15 +152,23 @@ bool xCharData(const std::string &text) {
 		if (context[context.size()-1]=="icon"){
 			param[count][5][dpart]=text.c_str();
 		}
-	}
+		if (context[context.size() -1]=="hmid"){
+			param[count][10][0]=text.c_str();
+			param[count][10][1]=text.c_str();
+		}
+		if (context[context.size() -1]=="ppcp"){
+			param[count][11][0]=text.c_str();
+			param[count][11][1]=text.c_str();
+		}
 
+          }
 	}
 
     return true;
 }
 
 bool xEndElem(const std::string &name) {
-        if (context[context.size()-1]=="sunr" || context[context.size()-1]=="hi" || context[context.size()-1]=="low" || context[context.size()-1]=="dnam" || context[context.size()-1]=="suns" || context[context.size()-1]=="icon"){
+        if (context[context.size()-1]=="sunr" || context[context.size()-1]=="hi" || context[context.size()-1]=="low" || context[context.size()-1]=="dnam" || context[context.size()-1]=="suns" || context[context.size()-1]=="icon" || context[context.size()-1]=="ppcp" || context[context.size()-1]=="hmid" || context[context.size()-1]=="t" || context[context.size()-1]=="s") {
                 locked= true;
         }
 	if (context[context.size()-1]=="day"){
@@ -167,47 +187,32 @@ bool xEndElem(const std::string &name) {
 }
 
 
-void cxmlParse::xmlParse(int daycount, std::string DestinationDir,int inDPart) {
-	/*std::string url="http://xoap.weather.com/weather/local/";
-  	url=url + code ;
-  	url=url + "?cc=*&unit=m&dayf=4&prod=xoap&par=1004124588&key=079f24145f208494";
-	printf("url %s\n",url.c_str());
-	if (!Get(url.c_str(),"/video/daten.dat")){
-		printf ("Unable to connect to http://xoap.weather.com\n");
-	}
-	else{*/
-		//context.clear();
+void cxmlParse::xmlParse(int daycount, std::string DataDir,int inDPart) {
 		
-		XML xml(DestinationDir + "/daten.dat");
+    		context.clear();
+		count = 0;
+		XML xml(DataDir + "/daten.dat");
 		xml.nodeStartCB(xStartElem);
 		xml.nodeEndCB(xEndElem);
 		xml.cdataCB(xCharData);
 		if (xml.parse() != 0) {
+		    printf("Can not parse data\n");
 		}else{
 			cxmlParse::ort=town.c_str();
-			cxmlParse::icon=param[daycount][5][inDPart].c_str();
-			cxmlParse::dayname=param[daycount][6][inDPart].c_str();
-			cxmlParse::wetter=param[daycount][4][inDPart].c_str();
-			cxmlParse::sunset=param[daycount][1][inDPart].c_str();
 			cxmlParse::sunrise=param[daycount][0][inDPart].c_str();
+			cxmlParse::sunset=param[daycount][1][inDPart].c_str();
 			cxmlParse::hi=param[daycount][2][inDPart].c_str();
 			cxmlParse::low=param[daycount][3][inDPart].c_str();
+			cxmlParse::wetter=param[daycount][4][inDPart].c_str();
+			cxmlParse::icon=param[daycount][5][inDPart].c_str();
+			cxmlParse::dayname=param[daycount][6][inDPart].c_str();
 			cxmlParse::date=param[daycount][7][inDPart].c_str();
 
-			/*for (int x=0;count>x;x++){
-				if (x==daycount){
-					cxmlParse::sunset=param[x][1][inDPart].c_str();
-					cxmlParse::dayname=param[x][1][inDPart].c_str();
-					cxmlParse::date=param[x][1][inDPart].c_str();
-					cxmlParse::sunrise=param[x][1][inDPart].c_str();
-					cxmlParse::hi=param[x][1][inDPart].c_str();
-					cxmlParse::low=param[x][1][inDPart].c_str();
-					cxmlParse::wetter=param[x][1][inDPart].c_str();
-					cxmlParse::icon=param[x][1][inDPart].c_str();
-				}
-				
-			}*/
-//		}
+			cxmlParse::winddir=param[daycount][8][inDPart].c_str();
+			cxmlParse::windspeed=param[daycount][9][inDPart].c_str();
+			cxmlParse::humidity=param[daycount][10][inDPart].c_str();
+			cxmlParse::raindown=param[daycount][11][inDPart].c_str();
+			
 	}
 }
 	

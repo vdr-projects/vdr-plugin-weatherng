@@ -9,6 +9,8 @@
 #include <getopt.h>
 #include <string>
 #include "getdata.h"
+#include "setup.h"
+#include "OsdWeather.h"
 #include "weatherng.h" 
 #include "vars.h"
 
@@ -31,20 +33,23 @@ const char *cPluginWetter::CommandLineHelp(void)
 
        free(help_str);	
        asprintf(&help_str,
-			  "  -D DIR    --dest=DIR    DIR to configuration of plugin.  e.g. /etc/plugins/weatherng\n");
+			  "  -D DIR    --data=DIR    DIR to datafiles of plugin.  e.g. /etc/plugins/weatherng\n"
+			  "  -I DIR    --images=DIR  DIR to imagefolder of plugin e.g. /etc/plugins/weatherng\n");
   return help_str;         
 }
 
 bool cPluginWetter::ProcessArgs(int argc, char *argv[]) {
   static struct option long_options[] = {
-       { "dest",	required_argument, NULL, 'D' },
+       { "data",	required_argument, NULL, 'D' },
+       { "images",	required_argument, NULL, 'I' },
        { NULL }
      };
      
   int c, option_index = 0;
-  while ((c = getopt_long(argc, argv, "D:", long_options, &option_index)) != -1) {
+  while ((c = getopt_long(argc, argv, "D:I:", long_options, &option_index)) != -1) {
           switch (c) {
-	  case 'D': DestinationDir = optarg; break;
+	  case 'D': DataDir = optarg; break;
+	  case 'I': ImageDir       = optarg; break;
 	  default: return false;
 	  }		    
 	}
@@ -53,10 +58,15 @@ bool cPluginWetter::ProcessArgs(int argc, char *argv[]) {
 
 bool cPluginWetter::Initialize(void)
 {
-  if (DestinationDir == NULL) {
-          DestinationDir = strdup(ConfigDirectory(PLUGIN_NAME_I18N));	         
-          esyslog("%s: Commandline parameter '-D' not set. Set default destination to : %s\n", PLUGIN_NAME_I18N, DestinationDir);
+  if (DataDir == NULL) {
+          DataDir = strdup(ConfigDirectory(PLUGIN_NAME_I18N));	         
+          esyslog("%s: Commandline parameter '-D' not set. Set default data directory to : %s\n", PLUGIN_NAME_I18N, DataDir);
   }
+  if (ImageDir == NULL) {
+          ImageDir = strdup(ConfigDirectory(PLUGIN_NAME_I18N));	         
+          esyslog("%s: Commandline parameter '-I' not set. Set default plugin directory to : %s\n", PLUGIN_NAME_I18N, ImageDir);
+  }
+
   return true;
 }
 
@@ -72,54 +82,88 @@ void cPluginWetter::Housekeeping(void)
 
 cOsdObject *cPluginWetter::MainMenuAction(void)
 {
-  return new cWetterOsd(&setup);
+  return new cWetterOsd();
 }
 
 cMenuSetupPage *cPluginWetter::SetupMenu(void)
 {
-    return new cMenuSetupWetter(&setup, this);
+    return new cMenuWetterSetup;
 }
 
 bool cPluginWetter::SetupParse(const char *Name, const char *Value)
  {
-	if      (!strcasecmp(Name, "StationId"))   strncpy(setup.stationId, Value, 8);
-	else if (!strcasecmp(Name, "RadarLeft"))   setup.w_left   = atoi(Value);
-	else if (!strcasecmp(Name, "RadarTop"))    setup.w_top    = atoi(Value);
-	else if (!strcasecmp(Name, "RadarWidth"))  setup.w_width  = atoi(Value);
-	else if (!strcasecmp(Name, "RadarHeight")) setup.w_height = atoi(Value);
-	else if (!strcasecmp(Name, "Fontsize"))    setup.w_fontsize = atoi(Value);
+	if      (!strcasecmp(Name, "StationId"))   strncpy(wetterSetup.stationId, Value, 8);
+	else if (!strcasecmp(Name, "RadarLeft"))   wetterSetup.w_left     = atoi(Value);
+	else if (!strcasecmp(Name, "RadarTop"))    wetterSetup.w_top      = atoi(Value);
+	else if (!strcasecmp(Name, "RadarWidth"))  wetterSetup.w_width    = atoi(Value);
+	else if (!strcasecmp(Name, "RadarHeight")) wetterSetup.w_height   = atoi(Value);
+	else if (!strcasecmp(Name, "RadarColors")) wetterSetup.w_rcolor   = atoi(Value);
+	else if (!strcasecmp(Name, "Fontsize"))    wetterSetup.w_fontsize = atoi(Value);
+	else if (!strcasecmp(Name, "Offline"))     wetterSetup.w_offline  = atoi(Value);
+	else if (!strcasecmp(Name, "Theme"))       wetterSetup.w_theme    = atoi(Value);
         else 
 	  return false;
+	return true;  
 }
 
 
+cMenuWetterSetup::cMenuWetterSetup(void)
+{
+  themes[eWetterThemeClassic]     = tr("Classic");
+  themes[eWetterThemeenElchi]     = tr("enElchi");
+  themes[eWetterThemeMoronimo]     = tr("Moronimo");
+  themes[eWetterThemeDeepBlue]     = tr("DeepBlue");
+  themes[eWetterThemeEnigma]     = tr("Enigma");
 
-cMenuSetupWetter::cMenuSetupWetter(cWetterSetup *setup, cPluginWetter *plugin) {
-	this->setup = setup;
-	this->plugin = plugin;
+  Setup();
+}    
 
-	Add(new cMenuEditStrItem(tr("Station ID"),   setup->stationId, 9, ALLOWED_STATION_CHARS));
-	Add(new cMenuEditIntItem(tr("Radar left"),   &setup->w_left, 1, 200));
-	Add(new cMenuEditIntItem(tr("Radar top"),    &setup->w_top, 1, 200));
-	Add(new cMenuEditIntItem(tr("Radar width"),  &setup->w_width, 400, 450));
-	Add(new cMenuEditIntItem(tr("Radar height"), &setup->w_height, 336, 400));
-	Add(new cMenuEditBoolItem(tr("Use small fonts"), &setup->w_fontsize));
-	
+
+void cMenuWetterSetup::Setup(void)
+{
+    int current = Current();
+
+        Clear();
+	Add(new cMenuEditStrItem(tr("Station ID"),                   wetterSetup.stationId, 9, ALLOWED_STATION_CHARS));
+	Add(new cMenuEditIntItem(tr("Radar left"),                  &wetterSetup.w_left, 1, 200));
+	Add(new cMenuEditIntItem(tr("Radar top"),                   &wetterSetup.w_top, 1, 200));
+	Add(new cMenuEditIntItem(tr("Radar width"),                 &wetterSetup.w_width, 100, 450));
+	Add(new cMenuEditIntItem(tr("Radar height"),                &wetterSetup.w_height, 100, 400));
+	Add(new cMenuEditBoolItem(tr("256 Colordepth (radarmaps)"), &wetterSetup.w_rcolor));
+	Add(new cMenuEditBoolItem(tr("Use small fonts"),            &wetterSetup.w_fontsize));
+	Add(new cMenuEditBoolItem(tr("Use offlinemode"),            &wetterSetup.w_offline));
+	Add(new cMenuEditStraItem(tr("Theme"),                      &wetterSetup.w_theme, eWetterThemeMaxNumber, themes));
+
+  SetCurrent(Get(current));
+  Display();	
 }
 
-void cMenuSetupWetter::Store(void) {
-	for(char *ptr = setup->stationId; *ptr; ++ptr) {
+void cMenuWetterSetup::Store(void)
+{
+	for(char *ptr = wetterSetup.stationId; *ptr; ++ptr) {
 		if (islower(*ptr)) {
 			*ptr = toupper(*ptr);
 		}
 	}
 
-	SetupStore("StationId",    setup->stationId);
-	SetupStore("RadarLeft",    setup->w_left);
-	SetupStore("RadarTop",     setup->w_top);
-	SetupStore("RadarWidth",   setup->w_width);
-	SetupStore("RadarHeight",  setup->w_height);
-	SetupStore("Fontsize",     setup->w_fontsize);
+	SetupStore("StationId",       wetterSetup.stationId);
+	SetupStore("RadarLeft",       wetterSetup.w_left);
+	SetupStore("RadarTop",        wetterSetup.w_top);
+	SetupStore("RadarWidth",      wetterSetup.w_width);
+	SetupStore("RadarHeight",     wetterSetup.w_height);
+	SetupStore("RadarColors",     wetterSetup.w_rcolor);
+	SetupStore("Fontsize",        wetterSetup.w_fontsize);
+	SetupStore("Offline",         wetterSetup.w_offline);
+	SetupStore("Theme",           wetterSetup.w_theme);
 	}
 
+eOSState cMenuWetterSetup::ProcessKey(eKeys Key)
+{
+ eOSState state = cMenuSetupPage::ProcessKey(Key);
+ if (Key != kNone) {
+       Setup();
+       }
+ return state;
+}
+        
 VDRPLUGINCREATOR(cPluginWetter); // Don't touch this!

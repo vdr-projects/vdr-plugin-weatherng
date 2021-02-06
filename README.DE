@@ -18,7 +18,7 @@ Zeigt das Die Wettervorhersage für die nächsten 10 Tage an.
 !!!!ACHTUNG PLUGIN AUFRUF HAT SICH IM NAMEN GEÄNDERT!!!!!!! 
 ===========================================================
 
-Der aufruf heist nun "-P weathern" und nicht mehr  "-P wetter" oder "-P Weather-NG"
+Der Aufruf heisst nun "-P weatherng" und nicht mehr  "-P wetter" oder "-P Weather-NG"
 
 
 
@@ -27,7 +27,7 @@ Der aufruf heist nun "-P weathern" und nicht mehr  "-P wetter" oder "-P Weather-
 Vorraussetzungen:
 =================
 ImageMagick 6.1.6
-Internet ;o)
+Internet optional ;o)
 
 
 Installation:
@@ -40,41 +40,64 @@ Dann die fertige lib zu den anderen Plugins kopieren.
 2.
 Die Optionen festlegen!
 
-Startet das Plugin mit den Optionen "-D" oder "--dest"
+Startet das Plugin mit den Optionen "-D"/"--data" und "I"/"--images"
 
--D	Dort ist das Verzeichniss wo sich die Daten befinden zb der Images Ordner
+-I	Dort ist das Verzeichniss wo sich die Daten befinden zb der Images Ordner
 	Somit ist es nun möglich auch die Daten auf die CF zu laden oder auf das Ramdrive.
+
+-D      Dort werden die Daten abgelegt. Es ist sinnvoll dort auch das
+        SatDownload Script abzulegen und aufzurufen, denn von dort werden
+	auch die Radarmaps eingelesen.
+
 	
-Wird die Option nicht angeben so wird automatisch ein Verzeichnis in eurem
-Plugin-Verzeichnis erstellt. also z.B.: $VDRCONFIG/plugins/weatherng.
+Werden die Optionen nicht angeben so wird standardmaessig in $PLUGINCONFIG/weatherng
+nach Daten gesucht.
 Also wenn man den Parameter nicht angibt , so muss man das Verzeichnis "images" 
 (und nicht nur den Inhalt davon) dorthin kopieren.
 
+Natuerlich muss man Zugriffsrechte auf die Verzeichnisse haben und besonders
+auf das Verzeichnis , welches man mit -D angibt, auch Schreibrechte.
+
 Also nochmal fuer Neulinge :D
 Angenommen das Verzeichnis fuer die Konfigurationen der plugins liegt in
-/VDR/etc/plugins , dann muss das so aussehen fuer korrekte Funktionen :
+/etc/VDR/plugins , dann muss das so aussehen fuer korrekte Funktionen :
 
 Aufrufbeispiele:
 ==================
 
 ./vdr -Pweatherng 
 
-/VDR/etc/plugins/weatherng
-/VDR/etc/plugins/weatherng/images/*.png
-/VDR/etc/plugins/weatherng/SatDownload
+/etc/VDR/plugins/weatherng
+/etc/VDR/plugins/weatherng/images/*.png
+/etc/VDR/plugins/weatherng/SatDownload
 
 
 
-./vdr -P'weatherng -D /tmp/wetter'
+./vdr -P'weatherng -I /tmp/wetter -D /mnt/Ramdisk'
 
 /tmp/wetter
 /tmp/wetter/images/*.png
-/tmp/wetter/SatDownload
+/mnt/Ramdisk/SatDownload
 
-
-!!!!!!Danke hierfür nochmal an Gonz für das Script :)!!!
 
 3. 
+Dann muss noch das Script SatDownload (findet man im Verzeichnisn Tools) angepasst
+werden und zwar der Pfad zum Verzeichnis , wo das Plugin spaeter die Bilder erwartet.
+Im Script selber ist erklaert , was anzupassen ist. Naemlich nur der Wechsel ins
+Verzeichnis. Gibt man einen falschen Pfad bzw. anderen an , so werden die Bilder
+dort gespeichert , wo man den Befehl aufruft.
+Bevor man eingeloggt ist , ist da zumeist / , was nicht gewuenscht ist.
+Ausfuehrlicher kann ich es nicht schreiben sonst wird das kompliziert ;)
+Fuer eigene Radarmaps ist nur die URL im Script zu aendern.
+Auf keinen Fall der Dateiname.
+
+Das Verzeichnis "images" beinhaltet die Wettersymbole und muss zur Anzeige im
+Konfigurationsverzeichnis des Plugin , welches man mit --images angibt ,kopiert werden.
+Das Verzeichnis images ist nicht mehr enthalten und muss separat heruntergeladen werden.
+Laut Author der Symbole duerfen die Bilder nicht kommerziell genutzt werden und passen
+somit nicht mehr in die GPL (siehe permissions.txt im images Verzeichnis).
+
+
 Im Setup Menü müsst ihr lediglich die ID eingeben, die kann man wie folg herausfinden.
 
 Ruft die Seite http://www.weather.com auf. 
@@ -88,6 +111,9 @@ GMXX0056 (Angabe für den Ort Herne)
 
 wobei 0056 ausgetauscht wird, mit der Nummer die für den jeweiligen Ort angegeben wurde.
 
+Im Offlinemodus wird nicht aufs Internet zugegriffen.
+somit ist es moeglich die Daten auf anderen Rechner zu besorgen und
+auf einen internetfreien VDR zu kopieren.
 
 
 ____________________________________________

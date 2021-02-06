@@ -3,8 +3,8 @@
  *  This module was kindly provided by Clemens Kirchgatterer
  */
 
-#ifndef _XML_H_
-#define _XML_H_
+#ifndef __XML_H
+#define __XML_H
 
 #include <string>
 #include <map>
@@ -60,4 +60,4 @@ private:
 
 };
 
-#endif // _XML_H_
+#endif // __XML_H
