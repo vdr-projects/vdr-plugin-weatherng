@@ -8,28 +8,27 @@
 # By default the main source file also carries this name.
 #
 
-HAVE_IMLIB2=1
-#HAVE_MAGICK=1
+## =============================
+## for magick++ support do this:
+## =============================
+#USE_MAGICK=1
 
-
-# UNCOMMENT THIS , IF YOU OWN A MODDED 4MB FF-CARD
-#HAVE_4MB=1
-
+### enable debug
+#DBG=1
 
 PLUGIN = weatherng
 
 ### The version number of this plugin (taken from the main source file):
 
-VERSION = $(shell grep 'static const char \*VERSION *=' $(PLUGIN).h | awk '{ print $$6 }' | sed -e 's/[";]//g')
+VERSION = $(shell grep 'static const char \*VERSION *=' $(PLUGIN).c | awk '{ print $$6 }' | sed -e 's/[";]//g')
 
 ### The C++ compiler and options:
 
 CXX      ?= g++
-CXXFLAGS ?= -O2 -Wall -Woverloaded-virtual
+CXXFLAGS ?= -02 -Wall -Woverloaded-virtual
 
 ### The directory environment:
 
-DVBDIR = ../../../../DVB
 VDRDIR = ../../..
 LIBDIR = ../../lib
 TMPDIR = /tmp
@@ -40,7 +39,7 @@ TMPDIR = /tmp
 
 ### The version number of VDR (taken from VDR's "config.h"):
 
-VDRVERSION = $(shell grep 'define VDRVERSION ' $(VDRDIR)/config.h | awk '{ print $$3 }' | sed -e 's/"//g')
+APIVERSION = $(shell grep 'define APIVERSION ' $(VDRDIR)/config.h | awk '{ print $$3 }' | sed -e 's/"//g')
 
 ### The name of the distribution archive:
 
@@ -49,36 +48,31 @@ PACKAGE = vdr-$(ARCHIVE)
 
 ### Includes and Defines (add further entries here):
 
-ifdef HAVE_IMLIB2 
-	DEFINES += -DHAVE_IMLIB2
+ifdef   USE_MAGICK
+	DEFINES += -DUSE_MAGICK
+	LIBS += -lMagick -lMagick++
+else
+	DEFINES += -DUSE_IMLIB2
 	LIBS += -lImlib2
 endif
 
-ifdef HAVE_MAGICK 
-	DEFINES += -DHAVE_MAGICK
-	LIBS += -lMagick -lMagick++
-endif
-
-ifdef HAVE_4MB
-	DEFINES += -DHAVE_4MB
-endif
-
-INCLUDES += -I$(VDRDIR)/include -I$(DVBDIR)/include
+INCLUDES += -I$(VDRDIR)/include 
 
 DEFINES += -D_GNU_SOURCE -DPLUGIN_NAME_I18N='"$(PLUGIN)"'
 
 ### The object files (add further files here):
 
-OBJS =  bitmap.o quantize.o imagecache.o\
-	\
-	$(PLUGIN).o xml.o parsing.o OsdWeather.o setup.o i18n.o vars.o\
-	 
+OBJS =  $(PLUGIN).o bitmap.o quantize.o imagecache.o\
+	xml.o parsing.o skin.o OsdWeather.o setup.o vars.o
+
+ifdef DBG
+	CXXFLAGS += -g
+endif
 
 ### Implicit rules:
 
 %.o: %.c
-
-	$(CXX) $(CXXFLAGS) -c $(DEFINES) $(INCLUDES) -o$@ $<
+	$(CXX) $(CXXFLAGS) -c $(DEFINES) $(INCLUDES) $<
 
 # Dependencies:
 
@@ -89,13 +83,38 @@ $(DEPFILE): Makefile
 
 -include $(DEPFILE)
 
+### Internationalization (I18N):
+
+PODIR     = po
+LOCALEDIR = $(VDRDIR)/locale
+I18Npo    = $(wildcard $(PODIR)/*.po)
+I18Nmsgs  = $(addprefix $(LOCALEDIR)/, $(addsuffix /LC_MESSAGES/vdr-$(PLUGIN).mo, $(notdir $(foreach file, $(I18Npo), $(basename $(file))))))
+I18Npot   = $(PODIR)/$(PLUGIN).pot
+
+%.mo: %.po
+	msgfmt -c -o $@ $<
+
+$(I18Npot): $(wildcard *.c)
+	xgettext -C -cTRANSLATORS --no-wrap --no-location -k -ktr -ktrNOOP --msgid-bugs-address='<djoimania.de>' -o $@ $^
+
+%.po: $(I18Npot)
+	msgmerge -U --no-wrap --no-location --backup=none -q $@ $<
+	@touch $@
+
+$(I18Nmsgs): $(LOCALEDIR)/%/LC_MESSAGES/vdr-$(PLUGIN).mo: $(PODIR)/%.mo
+	@mkdir -p $(dir $@)
+	cp $< $@
+
+.PHONY: i18n
+i18n: $(I18Nmsgs)
+
 ### Targets:
 
-all: libvdr-$(PLUGIN).so
+all: libvdr-$(PLUGIN).so i18n
 
 libvdr-$(PLUGIN).so: $(OBJS)
 	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(LIBS) -o $@
-	@cp $@ $(LIBDIR)/$@.$(VDRVERSION)
+	@cp $@ $(LIBDIR)/$@.$(APIVERSION)
 
 dist: clean
 	@-rm -rf $(TMPDIR)/$(ARCHIVE)
@@ -106,4 +125,5 @@ dist: clean
 	@echo Distribution package created as $(PACKAGE).tgz
 
 clean:
-	@-rm -f $(OBJS) $(DEPFILE) *.so *.tgz core* *~
+	@-rm -f $(PODIR)/*.mo $(PODIR)/*.pot
+	@-rm -f $(OBJS) $(DEPFILE) *.so *.tar.bz2 core* *~

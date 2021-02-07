@@ -9,11 +9,6 @@
 #include <string>
 #include <vdr/plugin.h>
 
-enum eWetterModes
-{
- eWetterModeMaxNumber
-}; 
-
 struct cWetterSetup
 {
 public:
@@ -23,46 +18,28 @@ public:
  int w_top;
  int w_width;
  int w_height;
-#ifdef HAVE_4MB
- int w_hicolor;
-#endif
- int w_fontsize;
- int w_theme;
+ int w_hiquality;
  int w_osdoffset_x;
  int w_osdoffset_y;
- int w_inverted;
- int w_corner;
  int w_dither;
  int w_alpha;
-#ifdef HAVE_MAGICK 
+#ifdef USE_MAGICK 
  int w_treedepth;
- int w_maxcachefill;
 #endif
+
+
+ char w_id1[64];
+ char w_id2[64];
+ char w_id3[64];
+
+ char w_id1_name[64];
+ char w_id2_name[64];
+ char w_id3_name[64];
+
+
+
 };
 
 extern cWetterSetup wetterSetup;
-
-enum eWetterThemes
-{
- eWetterThemeClassic,
- eWetterThemeenElchi,
- eWetterThemeMoronimo,
- eWetterThemeDeepBlue,
- eWetterThemeEnigma,
- eWetterThemeSilverGreen,
- eWetterThemeMoronimoMKII,
- eWetterThemeMaxNumber
- };
-
-struct cWetterTheme
-{
- int clrBackground;
- int clrBgBorder;
- int clrFgBorder;
- int clrFgText;
- int clrFgHiTemp;
-};
-
-extern const cWetterTheme wetterTheme[eWetterThemeMaxNumber];
 
 #endif //__SETUP_H 

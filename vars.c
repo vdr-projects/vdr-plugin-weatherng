@@ -1,7 +1,7 @@
 #include "vdr/plugin.h"
 #include "vars.h"
 
-char *DataDir   =  NULL;
-char *ImageDir  =  NULL;
-char *ScriptDir =  NULL;
-char *data_file =  NULL;
+const char *DataDir   =  NULL;
+const char *ImageDir  =  NULL;
+const char *ScriptDir =  NULL;
+const char *config_path = NULL;

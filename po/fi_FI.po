@@ -1,0 +1,199 @@
+# VDR plugin language source file.
+# Copyright (C) 2007 Klaus Schmidinger <kls@cadsoft.de>
+# This file is distributed under the same license as the VDR package.
+# Hannu Savolainen <hannu@opensound.com>, 2002
+# Jaakko Hyvätti <jaakko@hyvatti.iki.fi>, 2002
+# Niko Tarnanen <niko.tarnanen@hut.fi>, 2003
+# Rolf Ahrenberg <rahrenbe@cc.hut.fi>, 2003
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: VDR 1.5.7\n"
+"Report-Msgid-Bugs-To: <djoimania.de>\n"
+"POT-Creation-Date: 2008-01-15 22:39+0100\n"
+"PO-Revision-Date: 2008-01-15 22:39+0100\n"
+"Last-Translator: Rolf Ahrenberg <rahrenbe@cc.hut.fi>\n"
+"Language-Team: <vdr@linuxtv.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-15\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: OsdWeather.c:191
+msgid "Night"
+msgstr "YÖ"
+
+#: OsdWeather.c:193
+msgid "Day"
+msgstr "PÄIVÄ"
+
+#: OsdWeather.c:195
+msgid "Refresh"
+msgstr ""
+
+#: OsdWeather.c:197
+msgid "Radar"
+msgstr ""
+
+#: OsdWeather.c:199
+msgid "More.."
+msgstr ""
+
+#: OsdWeather.c:209
+msgid "Parent.."
+msgstr ""
+
+#: OsdWeather.c:440
+msgid "High temperature: "
+msgstr "Ylin lämpötila: "
+
+#: OsdWeather.c:446
+msgid "Low temperature: "
+msgstr "Alin lämpötila: "
+
+#: OsdWeather.c:452
+msgid "Wind comes from: "
+msgstr "Tuulen suunta: "
+
+#: OsdWeather.c:456
+msgid "Wind speed: "
+msgstr "Tuulen nopeus: "
+
+#: OsdWeather.c:462
+msgid "Humitidy: "
+msgstr "Ilmankosteus: "
+
+#: OsdWeather.c:464 OsdWeather.c:469
+msgid " %"
+msgstr " %"
+
+#: OsdWeather.c:467
+msgid "Precipitation: "
+msgstr "Sateen tod.näk.: "
+
+#: OsdWeather.c:474
+msgid "DAY"
+msgstr "PÄIVÄ"
+
+#: OsdWeather.c:476 OsdWeather.c:501
+msgid "On  "
+msgstr ""
+
+#: OsdWeather.c:478 OsdWeather.c:503
+msgid "in "
+msgstr ""
+
+#: OsdWeather.c:479
+msgid " dayover"
+msgstr ""
+
+#: OsdWeather.c:486 OsdWeather.c:510
+msgid "The temperature varies between  "
+msgstr ""
+
+#: OsdWeather.c:487 OsdWeather.c:511
+msgid "  and  "
+msgstr ""
+
+#: OsdWeather.c:488 OsdWeather.c:512
+msgid "  Grad"
+msgstr ""
+
+#: OsdWeather.c:491 OsdWeather.c:515
+msgid "The sun comes up at  "
+msgstr ""
+
+#: OsdWeather.c:492 OsdWeather.c:516
+msgid " and goes at  "
+msgstr ""
+
+#: OsdWeather.c:493 OsdWeather.c:517
+msgid " down"
+msgstr ""
+
+#: OsdWeather.c:499
+msgid "NIGHT"
+msgstr "YÖ"
+
+#: OsdWeather.c:504
+msgid " nightover"
+msgstr ""
+
+#: OsdWeather.c:524
+msgid "Weather for: "
+msgstr "Sää: "
+
+#: weatherng.c:22
+msgid "Weather.com: Weather forecast"
+msgstr "Weather.com:in sääennusteet"
+
+#: weatherng.c:23
+msgid "Weather-NG"
+msgstr "Sääennuste"
+
+#: weatherng.c:212
+msgid "Update data on start"
+msgstr "Päivitä säätiedot käynnistettäessä"
+
+#: weatherng.c:213
+msgid "Use one 8-bit area"
+msgstr ""
+
+#: weatherng.c:214
+msgid "Radarbitmap left"
+msgstr "Tutkakuvan vaakakeskitys"
+
+#: weatherng.c:215
+msgid "Radarbitmap top"
+msgstr "Tutkakuvan pystykeskitys"
+
+#: weatherng.c:218 weatherng.c:223
+msgid "Radarbitmap width"
+msgstr "Tutkakuvan leveys"
+
+#: weatherng.c:219 weatherng.c:224
+msgid "Radarbitmap height"
+msgstr "Tutkakuvan korkeus"
+
+#: weatherng.c:226
+msgid "Offset horizontal"
+msgstr "Vaakakeskitys"
+
+#: weatherng.c:227
+msgid "Offset vertical"
+msgstr "Pystykeskitys"
+
+#: weatherng.c:228
+msgid "Use dithering for images"
+msgstr "Ditteroi kuvat"
+
+#: weatherng.c:229
+msgid "Transparency for images"
+msgstr "Kuvien läpinäkyvyys"
+
+#: weatherng.c:231
+msgid "Image quality >=slower"
+msgstr "Kuvanlaatu"
+
+#: weatherng.c:234
+msgid "Location 1 (ID)"
+msgstr ""
+
+#: weatherng.c:235
+msgid "Location 1 (Name)"
+msgstr ""
+
+#: weatherng.c:236
+msgid "Location 2 (ID)"
+msgstr ""
+
+#: weatherng.c:237
+msgid "Location 2 (Name)"
+msgstr ""
+
+#: weatherng.c:238
+msgid "Location 3 (ID)"
+msgstr ""
+
+#: weatherng.c:239
+msgid "Location 3 (Name)"
+msgstr ""
