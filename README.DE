@@ -2,9 +2,9 @@ This is a "plugin" for the Video Disk Recorder (VDR).
 
 Written by:                  Sascha Bajonczak <BEE-JAY@gmx.net>
 
-Project's homepage:          http://beejay.vdr-developer.org/devel/
+Project's homepage:          http://vdr.glaserei-franz.de
 
-Latest version available at: http://beejay.vdr-developer.org/devel/
+Latest version available at: http://vdr.glaserei-franz.de
 
 See the file COPYING for license information.
 
@@ -31,7 +31,7 @@ Der Aufruf heisst nun "-P weatherng" und nicht mehr  "-P wetter" oder "-P Weathe
 ================
 Vorraussetzungen:
 =================
-ImageMagick 6.1.6
+ImageMagick oder Imlib2 (Beachte dazu die Info in der Datei "Makefile")
 Internet optional ;o)
 
 
@@ -42,31 +42,17 @@ Quickinstall:
 Plugin in $VDRSOURCE/PLUGINS/src/ entpacken
 Verlinken mit "weatherng" (ln -s weatherng-version weatherng)
 Fertige lib von $VDRSOURCE/PLUGINS/lib zu den anderen Plugin-libs kopieren
-Das Script weatherng.sh nach $VDR/$PLUGINCONFIG kopieren und editieren.
+Den Ordner weatherng nach $VDR/$PLUGINCONFIG kopieren und weatherng.sh editieren.
 Im Scrit den Parameter $SETUPCONF (Pfad zur setup.conf von VDR , zB /etc/vdr) anpassen.
-Die Wettersymbole downloaden, entpacken und das Verzeichnis!!! "images" ins selbe Verzeichnis wie "weatherng.sh" kopieren .
+Auch dort seinen Key und die 6 Urls zu den Radarmaps eintragen.
+
 VDR mit "-P weatherng" starten .
-In das Setup vom Plugin wechseln und die Einstellungen vornehmen (Standardwerte (bis auf Theme) sollten ok sein).
+In das Setup vom Plugin wechseln und die Einstellungen vornehmen .
+Vor allem die Locations anpassen.
+
 Dann das Plugin "Wetterbericht" aufrufen (Internetverbindung sollte bestehen)
-Zuerst werden keine Daten angezeigt. Deshalb die Daten mit Taste OK aktualiesieren.
+Zuerst werden keine Daten angezeigt. Deshalb die Daten mit Taste OK aktualisieren.
 Bei korrekter "weatherng.sh" sollten nun ein Wartesymbol erscheinen und die Wetterdaten/Radarmaps heruntergeladen werden.
-
-
-=============
-Tips:
-=============
-
-Hier ein paar Tips/Hinweise (Erfahrung ;)):
-Wo was erwartet wird , wird an allen Ecken ausgegeben. Zur Not mal VDR manuell von der Konsole starten
-StationID ist von WEATHER.COM zu holen und nicht woanders her (wie de.weather.com ,dwd.de).
-Unterstuetzt weather.com dein Kaff nicht , so waehle die naechstgroessere Stadt. :P
-Bei Problemen soviel Infos rausgeben wie moeglich . Ein Spruch wie : "Sehe keine Bilder" hilft niemanden und werden ignoriert
-Hilft das alles nichts , "koennte" das Weiterlesen helfen (Das Meiste sollte noch stimmen;)).
-Das Plugin sollte bei jedem laufen ab VDR-Version 1.3.17 mit korrekt installierter Imagemagick-Bibliothek
-Mit VDR-Version 1.2.x ist es nicht kompatibel.
-Das Script weatherng.sh ist extra extern gehalten , damit man es seinen eigenen Beduerfnissen anpassen kann.
-Mindesthoehe bei grosser Schrift sollte 480 sein . ansonsten kleine Schriftart waehlen.
-
 
 
 =============
@@ -88,8 +74,10 @@ Startet das Plugin mit den Optionen "-D"/"--data"  "I"/"--images" "S"/"--script"
 -D      Dort werden die Daten abgelegt.
 
 -S      Pfad zu "weatherng.sh" (z.B.: /usr/local/bin oder dort wo man das images Verzeichnis hinkopiert hat)
+
+-C      Pfad zum Verzeichnis weatherng (zb. /etc/vdr/plugins )
 	
-Werden die Optionen nicht angeben so wird standardmaessig in $PLUGINCONFIG/weatherng benutzt.
+Werden die Optionen nicht angeben so wird standardmaessig $PLUGINCONFIG/weatherng benutzt.
 
 
 Struktur :
@@ -117,7 +105,7 @@ Aufrufbeispiele:
 3. 
 Dann muss noch das Script "weatherng.sh" (findet man im Verzeichnisn "examples") angepasst
 werden .
-Fuer die Beispiele muss man die Erlaubnis fuer das Herunterladen/Anzeigen besitzen oder eigene URLs eintragen.
+Fuer die Beispiele muss man die Erlaubnis fuer das Herunterladen/Anzeigen besitzen und eigene URLs eintragen.
 Auf keinen Fall ist fuer korrekte Funktion der Dateiname zu aendern.
 
 Das Verzeichnis "images" beinhaltet die Wettersymbole und muss zur Anzeige in das
@@ -141,20 +129,9 @@ ____________________________________________
 Bedienung.
 
 Im Vorhersagemodus:
-	Auf = Zeigt die Wettervorhersage für die Nacht an.
-	Ab  = Zeigt die Wettervorhersage für den Tag an.
 	Links= Springt ein Tag zurück
 	Rechts = Springt ein Tag vor
-	5,Rot,Gruen,Gelb,Blau = Zeigt Satelitenbilder an
-	1  = Anzeige fuer Station ID 1     
-	2  = Anzeige fuer Station ID 2     
-	3  = Anzeige fuer Station ID 3     
-	Ok = Downlaod/Aktualisuerung der Wetterdaten/Satelitenbilder (soweit weatherng.sh geaendert wurde)
+        Back = Beenden
 
 Im Satelitenmodus:
-	"zurück" = Kommt wieder in den Vorhersagemodus
-
-
-Todo:
-	Animiertes Satelitenbild
-	
+	Back = Kommt wieder in den Vorhersagemodus

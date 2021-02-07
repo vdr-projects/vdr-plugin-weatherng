@@ -1,5 +1,5 @@
 #include <vector>
-#include <string>
+//#include <string>
 #include <vdr/plugin.h>
 #include <vdr/osd.h>
 #include <vdr/config.h>
@@ -7,53 +7,21 @@
 #include "parsing.h"
 #include "bitmap.h"
 #include "vars.h"
-#include "i18n.h"
+#include "skin.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <time.h>
 
-#include "symbols/left1.xpm"
-#include "symbols/right1.xpm"
-#include "symbols/day1.xpm"
-#include "symbols/night1.xpm"
-#include "symbols/left.xpm"
-#include "symbols/right.xpm"
-#include "symbols/day.xpm"
-#include "symbols/night.xpm"
 
 
+#define CELLWIDTH 100
 
 #define TRUE 1
 #define FALSE 0
 #define BOOL int
-#define OSDWIDTH 600
-#define OSDHEIGHT (Setup.OSDHeight + wetterSetup.w_osdoffset_y)
-#define CELLWIDTH ((OSDWIDTH / 4)-1)	
 
-
-cBitmap cWetterOsd::bmLeft(left1_xpm);
-cBitmap cWetterOsd::bmRight(right1_xpm);
-cBitmap cWetterOsd::bmDay(day1_xpm);
-cBitmap cWetterOsd::bmNight(night1_xpm);
-cBitmap cWetterOsd::bmLeft_inv(left_xpm);
-cBitmap cWetterOsd::bmRight_inv(right_xpm);
-cBitmap cWetterOsd::bmDay_inv(day_xpm);
-cBitmap cWetterOsd::bmNight_inv(night_xpm);
-
-
-
-char *Radarmap;
-//char *data_file;
-
-const int MAX_LOGO_COLORS=16;
-const cFont *font;
-
-int part=0;
-int colordepth  =  16;
-int areadepth   =   4;
-
-bool IsSatelite,satelite;
+#define DAY 7
 
 static int if_exist_file( const char *filename) {
   FILE *f = fopen( filename, "r" );
@@ -68,21 +36,23 @@ static int if_exist_file( const char *filename) {
 
 cWetterOsd::cWetterOsd(void)
 {
+// OSD
   osd           = NULL;
+
+  colordepth = 16;
+  areadepth  =  4;
+  part       = 0;
+
+  show_wait  = false;
+  font = cFont::GetFont(fontSml);
+
   day           = 1;
   IsSatelite    = false;
-  Radar_left    = wetterSetup.w_left;
-  Radar_top     = wetterSetup.w_top;
-  Radar_width   = wetterSetup.w_width;
-  Radar_height  = wetterSetup.w_height;
-#ifdef HAVE_4MB
-  hicolor       = wetterSetup.w_hicolor;
-#endif
-  row_y         = 30;
-  fontsize      = wetterSetup.w_fontsize;
-  inverted      = wetterSetup.w_inverted;
-  corner        = wetterSetup.w_corner;
   data_file     = "/data1.xml";
+  
+  showbuttons = 0;
+  radar = 0;
+
 }
 
 cWetterOsd::~cWetterOsd(void)
@@ -90,145 +60,9 @@ cWetterOsd::~cWetterOsd(void)
   cWeatherBitmap::FlushCache();     
   if (osd)
      delete osd;
-
 }
 
 
-eOSState cWetterOsd::ProcessKey(eKeys Key)
-{
-  eOSState state = cOsdObject::ProcessKey(Key);
-  if (state == osUnknown) {
-     switch (Key & ~k_Repeat) {
-       case kOk:
-		if(IsSatelite==true)
-		    {
-        		IsSatelite = false; 
-			cWetterOsd::Show();
-		    }
-		else
-		    {
-			file = ImageDir;
-			file = file  + "/images/wait.png";
-
-#ifdef HAVE_4MB
-			if (hicolor==false) {
-			    colordepth  =  16;
-			    }
-			else {
-			    colordepth  = 256;
-			}
-#else
-			colordepth = 16;
-#endif               
-
-
-			cWeatherBitmap *bmp;
-		        if((bmp = cWeatherBitmap::Load(file, wetterSetup.w_alpha, 196, 196 , colordepth )) != NULL) {
-				// Fix for color
-			   osd->DrawRectangle(CELLWIDTH-1, 0, 3 * CELLWIDTH, (OSDHEIGHT - (7 * row_y)) -11, clrTransparent);
-			        // top
-			   osd->DrawRectangle(((OSDWIDTH-196)/2)-4,(((OSDHEIGHT/2)-196)/2)-4,((OSDWIDTH-196)/2)+200,(((OSDHEIGHT/2)-196)/2), wetterTheme[wetterSetup.w_theme].clrBgBorder);
-// bottom (something to fix)
-			    osd->DrawRectangle(((OSDWIDTH-196)/2)-4,(((OSDHEIGHT/2)-196)/2)+128,((OSDWIDTH-196)/2)+200,(((OSDHEIGHT/2)-196)/2)+200, wetterTheme[wetterSetup.w_theme].clrBgBorder);
-				// left
-			    osd->DrawRectangle(((OSDWIDTH-196)/2)-4,(((OSDHEIGHT/2)-196)/2),((OSDWIDTH-196)/2),(((OSDHEIGHT/2)-196)/2)+196, wetterTheme[wetterSetup.w_theme].clrBgBorder);
-				// right
-			    osd->DrawRectangle(((OSDWIDTH-196)/2)+196,(((OSDHEIGHT/2)-196)/2),((OSDWIDTH-196)/2)+200,(((OSDHEIGHT/2)-196)/2)+196, wetterTheme[wetterSetup.w_theme].clrBgBorder);
-				// Picture
-	                    osd->DrawBitmap((OSDWIDTH-196) /2,((OSDHEIGHT/2)-196)/2 , bmp->Get(),clrTransparent,clrTransparent);
-//		            delete b;
-			 }
-			 osd->Flush();
-			 cWetterOsd::GetData();
-			 cWetterOsd::Show();
-		    }
-		break;
-       case kLeft: 
-			day--;
-			if (day<1){
-			day=1;
-			}
-			cWetterOsd::Show();  
-		break;
-       case kUp:
-                	part++;
-                	if (part>1){
-                	part=1;
-                	}
-                	cWetterOsd::Show();
-		break;
-       case kDown:
-			part--;
-                	if (part<0){
-                	part=0;
-                	}
-                	cWetterOsd::Show();
-		break;
-       case kRight: 
-                	day++;
-              		if (day>10){
-                	day=10;
-                	}
-			cWetterOsd::Show();
-		break;
-       case kBack:
-		if(IsSatelite==true){
-			IsSatelite=false;	
-			cWetterOsd::Show();
-		}
-		else{
-		return osEnd;
-		}
-		break;
-	case k1:
-		if(IsSatelite==true){
-        		IsSatelite = false; }
-			data_file  = "/data1.xml";
-			cWetterOsd::Show();
-		break;
-	case k2:
-		if(IsSatelite==true){
-        		IsSatelite = false; }
-			data_file  = "/data2.xml";
-			cWetterOsd::Show();
-		break;
-	case k3:
-		if(IsSatelite==true){
-        		IsSatelite =false; }
-			data_file  = "/data3.xml";
-			cWetterOsd::Show();
-		break; 
-	case k5:
-			IsSatelite=true;
-			Radarmap="/pic0";
-			cWetterOsd::Satelite();
-		break;
-	case kRed:
-			IsSatelite=true;
-			Radarmap="/pic1";
-			cWetterOsd::Satelite();
-		break;
-	case kGreen:
-			IsSatelite=true;
-			Radarmap="/pic2";
-			cWetterOsd::Satelite();
-		break;
-	case kYellow:
-			IsSatelite=true;
-			Radarmap="/pic3";
-			cWetterOsd::Satelite();
-		break;
-	case kBlue:
-			IsSatelite=true;
-			Radarmap="/pic4";
-			cWetterOsd::Satelite();
-		break;
-	default: return state;
-       }
-     state = osContinue;
-     }
-  return state;
-}
 
 
 void cWetterOsd::GetData(void)
@@ -236,7 +70,7 @@ void cWetterOsd::GetData(void)
  FILE *script;
  char *buffer;
 
- asprintf(&buffer, "%s%s",ScriptDir,"/weatherng.sh");
+ asprintf(&buffer, "%s%s '%s' '%s' '%s'",ScriptDir,"/weatherng.sh", wetterSetup.w_id1, wetterSetup.w_id2, wetterSetup.w_id3);
  
  script = popen(buffer, "r");
  dsyslog("DEBUG : weatherng: Executing GetData :'%s'", buffer);
@@ -248,357 +82,656 @@ void cWetterOsd::GetData(void)
 }
 
 
-int cWetterOsd::Satelite(void)
+void cWetterOsd::Satelite(void)
 {
-delete osd;
-osd = cOsdProvider::NewOsd(Radar_left ,Radar_top );
-satelite=false;
-if (osd) {
+  delete osd;
+  osd = cOsdProvider::NewOsd(Radar_left ,Radar_top );
+  if (!osd){
+    esyslog("weatherng: ERROR : (satelite): No OSD avaiable");
+    return;
+  }
+
+    if(wetterSetup.w_hiquality) {
+      areadepth   =   8;
+      colordepth  = 255;
+      }
+    else {
+      areadepth  = 4;
+      colordepth = 16;
+    }           
 
 
-#ifdef HAVE_4MB
-		if (hicolor==false) {
-		    areadepth   =   4;
-		    colordepth  =  16;
-		    }
-		else {
-		    areadepth   =   8;
-		    colordepth  = 255;
-		}
+    tArea Area[] = { {1,1,Radar_width,Radar_height,areadepth}, };
+
+    eOsdError result = osd->CanHandleAreas(Area, sizeof(Area) / sizeof(tArea));
+    if (result == oeOk) {
+      osd->SetAreas(Area, sizeof(Area) / sizeof(tArea));
+      }
+    else {
+        const char *errormsg = NULL;
+	switch (result) {
+	    case oeTooManyAreas:
+		errormsg = "Too many OSD areas!"; break;
+	    case oeTooManyColors:
+		errormsg = "Too many colors!"; break;
+	    case oeBppNotSupported:
+		errormsg = "Depth not suppoerted!"; break;
+	    case oeAreasOverlap:
+		errormsg = "Areas are overlapped!"; break;
+	    case oeWrongAlignment:
+		errormsg = "Areas not correctly aligned!"; break;
+	    case oeOutOfMemory:
+		errormsg = "OSD memory overflow!"; break;
+	    case oeUnknown:
+		errormsg = "Unknown OSD error!"; break;
+    	    default:
+		break;
+	}	
+        esyslog("weatherng: ERROR : %s: (satelite): OSD open failed! Can't handle areas (%d)\n",PLUGIN_NAME_I18N, result);
+        if(osd) { delete osd; osd=0; }
+	
+	return;
+    }
+
+    sat_dir = DataDir;
+    sat_dir = sat_dir  + Radarmap;
+    BOOL ex = if_exist_file(sat_dir.c_str());
+
+    if ( ex ) {
+      cWeatherBitmap *bmp;
+      if((bmp = cWeatherBitmap::Load(sat_dir.c_str(), wetterSetup.w_alpha, Radar_height -2, Radar_width -2 , colordepth )) != NULL)
+        osd->DrawBitmap(2, 2, bmp->Get(), clrTransparent, clrTransparent);
+
+      // debug
+      dsyslog("DEBUG : weatherng: SATELITE\n");
+#ifdef USE_MAGICK
+      dsyslog("DEBUG : weatherng: USE IMAGEMAGICK\n");;
 #else
-		areadepth  = 4;
-		colordepth = 16;
-#endif               
-//                esyslog("left=%i top=%i witdh=%i height=%i",Radar_left,Radar_top,Radar_width,Radar_height);
-
-		tArea Area = {1,1,Radar_width,Radar_height,areadepth};
-		eOsdError result = osd->CanHandleAreas(&Area, 1);
-		if (result == oeOk) {
-			osd->SetAreas(&Area, 1);
-		   }
-	        else
-                   esyslog("ERROR : %s (satelite): OSD open failed! Can't handle areas (%d)\n",PLUGIN_NAME_I18N,result); 
-
-		std::string sat_dir;
-		sat_dir = DataDir;
-		sat_dir = sat_dir  + Radarmap;
-
-		BOOL ex = if_exist_file(sat_dir.c_str());
-
-		if ( ex ) {
-
-            			cWeatherBitmap *bmp;
-	        	        if((bmp = cWeatherBitmap::Load(sat_dir.c_str(), wetterSetup.w_alpha, Radar_height -2, Radar_width -2 , colordepth )) != NULL) {
-	                          osd->DrawBitmap(2, 2, bmp->Get(), clrTransparent, clrTransparent);
-    				}
-//				delete b;
-
-				// debug
-
-				  dsyslog("DEBUG : weatherng: SATELITE\n");
-#ifdef HAVE_IMLIB2
-				  dsyslog("DEBUG : weatherng: USE IMLIB2\n");;
+      dsyslog("DEBUG : weatherng: USE IMLIB2\n");;
 #endif
-#ifdef HAVE_MAGICK
-				  dsyslog("DEBUG : weatherng: USE IMAGEMAGICK\n");;
-#endif
-				  dsyslog("DEBUG : weatherng: USE XPM\n");;
-				  dsyslog("DEBUG : weatherng: SCRIPTDIR  = %s\n", ScriptDir);
-				  dsyslog("DEBUG : weatherng: IMAGEDIR   = %s\n", ImageDir);
-				  dsyslog("DEBUG : weatherng: DATADIR   = %s\n", DataDir);
-#ifdef HAVE_4MB
-				  dsyslog("DEBUG : weatherng: 256 COLORS ENABLED  = %i\n", hicolor);
-#endif
-				  dsyslog("DEBUG : weatherng: AREADEPTH   = %i\n", areadepth);
-				  dsyslog("DEBUG : weatherng: COLORDEPTH = %i\n", colordepth);
-				  dsyslog("DEBUG : weatherng: RADAR_LEFT = %i\n", Radar_left);
-				  dsyslog("DEBUG : weatherng: RADAR_TOP  = %i\n", Radar_top);
-				  dsyslog("DEBUG : weatherng: RADAR_WIDTH  = %i\n", Radar_width);
-				  dsyslog("DEBUG : weatherng: RADAR_HEIGHT  = %i\n", Radar_height);
-				
-			  }	
 
-		else {	
-				perror(sat_dir.c_str());
 
-				sat_dir = ImageDir;
-    				sat_dir = sat_dir + "/images/nopic.png";
-				sat_dir = ImageDir;
-    				sat_dir = sat_dir + "/images/nopic.png";
+      dsyslog("DEBUG : weatherng: USE XPM\n");;
+      dsyslog("DEBUG : weatherng: SCRIPTDIR  = %s\n", ScriptDir);
+      dsyslog("DEBUG : weatherng: IMAGEDIR   = %s\n", ImageDir);
+      dsyslog("DEBUG : weatherng: DATADIR   = %s\n", DataDir);
+      dsyslog("DEBUG : weatherng: AREADEPTH   = %i\n", areadepth);
+      dsyslog("DEBUG : weatherng: COLORDEPTH = %i\n", colordepth);
+      dsyslog("DEBUG : weatherng: RADAR_LEFT = %i\n", Radar_left);
+      dsyslog("DEBUG : weatherng: RADAR_TOP  = %i\n", Radar_top);
+      dsyslog("DEBUG : weatherng: RADAR_WIDTH  = %i\n", Radar_width);
+      dsyslog("DEBUG : weatherng: RADAR_HEIGHT  = %i\n", Radar_height);
+      }	
+    else {	
+      perror(sat_dir.c_str());
+      sat_dir = ImageDir;
+      sat_dir = sat_dir + "/images/nopic.png";
+      sat_dir = ImageDir;
+      sat_dir = sat_dir + "/images/nopic.png";
 
-            			cWeatherBitmap *bmp;
-	        	        if((bmp = cWeatherBitmap::Load(sat_dir.c_str(), wetterSetup.w_alpha, Radar_height -2, Radar_width -2 , colordepth )) != NULL) {
-		                  osd->DrawBitmap(2, 2, bmp->Get(), clrTransparent, clrTransparent);
-				}			
-//				delete b;
-				
-		     }
-               osd->Flush();
-	}
-  return EXIT_SUCCESS;
+      cWeatherBitmap *bmp;
+      if((bmp = cWeatherBitmap::Load(sat_dir.c_str(), wetterSetup.w_alpha, Radar_height -2, Radar_width -2 , colordepth )) != NULL)
+        osd->DrawBitmap(2, 2, bmp->Get(), clrTransparent, clrTransparent);
+    }
+
+    osd->Flush();
 
 }
 
+
+/* Status buttons */
+void cWetterOsd::ShowStatusButtons(int ShowButtons)
+{
+  int tab;
+  tab = osdwidth/4;
+  showbuttons = ShowButtons;
+  
+  switch(showbuttons) {
+    case 0:
+        osd->DrawEllipse(14     , osdheight -fh + 8,  26 , osdheight -fh +21, clrStatusRed, 0);
+        if(part==0)
+          osd->DrawText(       34 , osdheight -fh, tr("Night"), clrStatusFG, clrStatusBG, font, 16*fw, fh, taLeft);
+	else  
+          osd->DrawText(       34 , osdheight -fh, tr("Day"), clrStatusFG, clrStatusBG, font, 16*fw, fh, taLeft);
+        osd->DrawEllipse(tab+8  , osdheight -fh + 8, tab + 20 , osdheight -fh  +21, clrStatusGreen, 0);
+        osd->DrawText(  tab + 28, osdheight -fh, tr("Refresh"), clrStatusFG, clrStatusBG, font, 16*fw, fh, taLeft);
+        osd->DrawEllipse(2*tab+8, osdheight -fh + 8, 2*tab + 20 , osdheight -fh  +21, clrStatusYellow, 0);
+        osd->DrawText( 2*tab +28, osdheight -fh, tr("Radar"), clrStatusFG, clrStatusBG, font, 16*fw, fh, taLeft);
+        osd->DrawEllipse(3*tab+8, osdheight -fh + 8, 3*tab + 20 , osdheight -fh  +21, clrStatusBlue, 0);
+        osd->DrawText( 3*tab +28, osdheight -fh, tr("More.."), clrStatusFG, clrStatusBG, font, 16*fw, fh, taLeft);
+      break;
+    case 1:
+        osd->DrawEllipse(14     , osdheight -fh + 8,  26 , osdheight -fh +21, clrStatusRed, 0);
+        osd->DrawText(       34 , osdheight -fh, wetterSetup.w_id1_name, clrStatusFG, clrStatusBG, font, 16*fw, fh, taLeft);
+        osd->DrawEllipse(tab+8  , osdheight -fh + 8, tab + 20 , osdheight -fh  +21, clrStatusGreen, 0);
+        osd->DrawText(  tab + 28, osdheight -fh, wetterSetup.w_id2_name, clrStatusFG, clrStatusBG, font, 16*fw, fh, taLeft);
+        osd->DrawEllipse(2*tab+8, osdheight -fh + 8, 2*tab + 20 , osdheight -fh  +21, clrStatusYellow, 0);
+        osd->DrawText( 2*tab +28, osdheight -fh, wetterSetup.w_id3_name, clrStatusFG, clrStatusBG, font, 16*fw, fh, taLeft);
+        osd->DrawEllipse(3*tab+8, osdheight -fh + 8, 3*tab + 20 , osdheight -fh  +21, clrStatusBlue, 0);
+        osd->DrawText( 3*tab +28, osdheight -fh, tr("Parent.."), clrStatusFG, clrStatusBG, font, 16*fw, fh, taLeft);
+      break;
+  }         
+    
+}
+
+
+/* Colors */
+void cWetterOsd::SetVars(void)
+{
+  fw = 6;
+  fh = 36;
+
+  cw = ( Setup.OSDWidth -   (fh +8 +196 +8));
+  cw = cw & ~0x07;
+
+  osdleft   = Setup.OSDLeft + wetterSetup.w_osdoffset_x;
+  osdtop    = Setup.OSDTop  + wetterSetup.w_osdoffset_y;
+  osdwidth  = Setup.OSDWidth;
+  osdheight = Setup.OSDHeight;
+
+  Radar_left   = wetterSetup.w_left;
+  Radar_top    = wetterSetup.w_top;
+  Radar_width  = wetterSetup.w_width;
+  Radar_height = wetterSetup.w_height;
+
+
+
+  clrTopBG        = WeatherSkin.clrTopBG;
+  clrTopFG        = WeatherSkin.clrTopFG;
+  clrBG1          = WeatherSkin.clrBG1;
+  clrBG2          = WeatherSkin.clrBG2;
+  clrHighFG       = WeatherSkin.clrHighFG;
+  clrIconFG       = WeatherSkin.clrIconFG;
+  clrTextFG       = WeatherSkin.clrTextFG;
+  clrDateFG       = WeatherSkin.clrDateFG;
+  clrStatusBG     = WeatherSkin.clrStatusBG;
+  clrStatusFG     = WeatherSkin.clrStatusFG;
+  clrStatusRed    = WeatherSkin.clrStatusRed;
+  clrStatusGreen  = WeatherSkin.clrStatusGreen;
+  clrStatusYellow = WeatherSkin.clrStatusYellow;
+  clrStatusBlue   = WeatherSkin.clrStatusBlue;
+}
+
+
+/* Display */
 void cWetterOsd::Show(void)
 {
+
+  SetVars();
+
   IsSatelite=false;
   dsyslog("DEBUG : weatherng: Part: %i\n",part);
 
+
   delete osd;
-  osd = cOsdProvider::NewOsd(((Setup.OSDWidth -OSDWIDTH) / 2) + Setup.OSDLeft + wetterSetup.w_osdoffset_x, ((Setup.OSDHeight - OSDHEIGHT) / 2) + Setup.OSDTop);
+  osd = cOsdProvider::NewOsd(osdleft ,osdtop);
   if (osd) {
-
-	std::string ausgabe;
-        std::string sat_file;
-	sat_file = DataDir;
-	sat_file = sat_file + data_file;
+    sat_file = DataDir;
+    sat_file = sat_file + data_file;
 
 
-	        if (!fontsize) {
-		    font     =    cFont::GetFont(fontOsd);
-		    row_y =    30;
-		    }
-		  else {
-		    font = cFont::GetFont(fontSml);
-		    row_y =    25;
-	            }
+    if(wetterSetup.w_hiquality) {
+      colordepth  = 200;
+      areadepth   =   8;
 
-/*
-#ifdef HAVE_4MB
-		if (hicolor==false) {
-		    colordepth  =  16;
-		    areadepth   =   4;
-		}
-		else {
-		    colordepth  = 255;
-		    areadepth   =   8;
-		}
-#else
-		colordepth  =  16;
-		areadepth   =   4;
-
-#endif               
-*/
-		colordepth  =  16;
-		areadepth   =   4;
-
-		tArea Area[] = {
-				{CELLWIDTH-1, 0, 3 * CELLWIDTH, (OSDHEIGHT - (7 * row_y)) -11, areadepth},
-				{0, OSDHEIGHT - ((7 * row_y) +10), OSDWIDTH -1, OSDHEIGHT -((6 * row_y) +10), 2},
-				{0, OSDHEIGHT - ((6 * row_y) +9), OSDWIDTH -1, OSDHEIGHT -(row_y +1), 2},
-				{0, OSDHEIGHT - row_y, OSDWIDTH -1, OSDHEIGHT, 2},
-				};
-
-	        eOsdError result = osd->CanHandleAreas(Area, sizeof(Area) / sizeof(tArea));
-                if (result == oeOk) {
-	           osd->SetAreas(Area, sizeof(Area) / sizeof(tArea));
-		   }
-	        else	  
-                   esyslog("ERROR : %s: OSD open failed! Can't handle areas (%d)\n",PLUGIN_NAME_I18N, result);
-
-		// icon
-		osd->DrawRectangle(CELLWIDTH-1, 0, 3 * CELLWIDTH, (OSDHEIGHT / 2) - 1, clrTransparent);
-
-		// Info top
-     		osd->DrawRectangle(0, OSDHEIGHT - ((7 * row_y)+10), OSDWIDTH, OSDHEIGHT - ((6 * row_y)+10), wetterTheme[wetterSetup.w_theme].clrBgBorder);
-                // Mainfield left
-		osd->DrawRectangle(3, OSDHEIGHT - ((6 * row_y) + 9), (OSDWIDTH / 2) -4 , OSDHEIGHT - row_y, wetterTheme[wetterSetup.w_theme].clrBackground);
-		// Mainfield right
-		osd->DrawRectangle((OSDWIDTH / 2)+2, OSDHEIGHT - ((6 * row_y) + 9), OSDWIDTH -3, OSDHEIGHT - row_y,  wetterTheme[wetterSetup.w_theme].clrBackground);
-		
-                // BORDER
-                // left OK    middle OK    right OK    horiz. OK
-      		osd->DrawRectangle(0, (OSDHEIGHT - ((6 * row_y)+10))+1, 3, OSDHEIGHT-row_y, wetterTheme[wetterSetup.w_theme].clrBgBorder);
-      		osd->DrawRectangle((OSDWIDTH / 2) -3, (OSDHEIGHT - ((6 * row_y)+10))+1, (OSDWIDTH / 2)+1,OSDHEIGHT-(2 * row_y), wetterTheme[wetterSetup.w_theme].clrBgBorder);
-      		osd->DrawRectangle(OSDWIDTH -4, (OSDHEIGHT - ((6 * row_y)+10))+1, OSDWIDTH, OSDHEIGHT-row_y, wetterTheme[wetterSetup.w_theme].clrBgBorder);
-      		osd->DrawRectangle(4, (OSDHEIGHT - (2 * row_y))-1, OSDWIDTH -5, (OSDHEIGHT - (2 *row_y)) +1, wetterTheme[wetterSetup.w_theme].clrBgBorder);
-
-                // Info bottom
-      		osd->DrawRectangle(0, OSDHEIGHT - row_y, OSDWIDTH, OSDHEIGHT, wetterTheme[wetterSetup.w_theme].clrBgBorder);
+      tArea Area[] = {  {0, 0, osdwidth -1, osdheight -1, areadepth} };
 
 
-	     BOOL ex = if_exist_file(sat_file.c_str());
-
-             if (ex) {
-			dsyslog("DEBUG : weatherng: Parse %s !\n", sat_file.c_str());
-
-           		cxmlParse parser;
-
-			dsyslog("DEBUG : weatherng: day: %i\n",day);	
-
-			parser.xmlParse((int) day, DataDir, data_file, part);
-
-			file = ImageDir;
-			file = file  + "/images/";
-			file = file + parser.icon.c_str();
-			file = file + ".png";
-
-    			cWeatherBitmap *bmp;
-        	        if((bmp = cWeatherBitmap::Load(file.c_str(), wetterSetup.w_alpha, 196, 196, colordepth )) != NULL) {
-				// Fix for color
-				osd->DrawRectangle(CELLWIDTH-1, 0, 3 * CELLWIDTH, (OSDHEIGHT - (7 * row_y)) -11, clrTransparent);
-			        // top
-				osd->DrawRectangle(((OSDWIDTH-196)/2)-4,(((OSDHEIGHT/2)-196)/2)-4,((OSDWIDTH-196)/2)+200,(((OSDHEIGHT/2)-196)/2), wetterTheme[wetterSetup.w_theme].clrBgBorder);
-// bottom (something to fix)
-				osd->DrawRectangle(((OSDWIDTH-196)/2)-4,(((OSDHEIGHT/2)-196)/2)+128,((OSDWIDTH-196)/2)+200,(((OSDHEIGHT/2)-196)/2)+200, wetterTheme[wetterSetup.w_theme].clrBgBorder);
-				// left
-				osd->DrawRectangle(((OSDWIDTH-196)/2)-4,(((OSDHEIGHT/2)-196)/2),((OSDWIDTH-196)/2),(((OSDHEIGHT/2)-196)/2)+196, wetterTheme[wetterSetup.w_theme].clrBgBorder);
-				// right
-				osd->DrawRectangle(((OSDWIDTH-196)/2)+196,(((OSDHEIGHT/2)-196)/2),((OSDWIDTH-196)/2)+200,(((OSDHEIGHT/2)-196)/2)+196, wetterTheme[wetterSetup.w_theme].clrBgBorder);
-				// Picture
-
-	                        osd->DrawBitmap((OSDWIDTH-196) /2,((OSDHEIGHT/2)-196)/2 , bmp->Get(),clrTransparent,clrTransparent);
-	                }
-
-			dsyslog("DEBUG : weatherng: Information about: %s\n",parser.ort.c_str());
-
-			  // left Side
-			  ausgabe = tr("Weather for: ");
-			  ausgabe = ausgabe + parser.ort.c_str() + "  /  ";
-			  ausgabe = ausgabe + tr(parser.dayname.c_str());
-			  ausgabe = ausgabe + "  (" + parser.date + ")";
-			osd->DrawText(16, (OSDHEIGHT - ((7 * row_y)+10)) + 1,ausgabe.c_str(), wetterTheme[wetterSetup.w_theme].clrFgBorder,clrTransparent,font,OSDWIDTH -16,20,taCenter);
-
-			osd->DrawText(8, OSDHEIGHT - ((6 * row_y)+5), tr("High temperature: "), wetterTheme[wetterSetup.w_theme].clrFgHiTemp,clrTransparent,font);
-		          ausgabe = parser.hi.c_str();
-		          ausgabe = ausgabe + " ";
-			  ausgabe = ausgabe + parser.celsius.c_str();
-			osd->DrawText(CELLWIDTH - 8, OSDHEIGHT - ((6 * row_y)+5), ausgabe.c_str(), wetterTheme[wetterSetup.w_theme].clrFgHiTemp,clrTransparent,font,CELLWIDTH,20,taRight);
-		
-			osd->DrawText(8, OSDHEIGHT - ((5 * row_y)+5), tr("Low temperature: "), wetterTheme[wetterSetup.w_theme].clrFgText,clrTransparent,font);
-	                  ausgabe = parser.low.c_str();
-	                  ausgabe = ausgabe + " ";
-			  ausgabe = ausgabe + parser.celsius.c_str();
-	                osd->DrawText(CELLWIDTH - 8, OSDHEIGHT - ((5 * row_y)+5), ausgabe.c_str(), wetterTheme[wetterSetup.w_theme].clrFgText,clrTransparent,font,CELLWIDTH,20,taRight);
-
-	 		osd->DrawText(8, OSDHEIGHT - ((4 * row_y)+5), tr("Sunrise: "), wetterTheme[wetterSetup.w_theme].clrFgText,clrTransparent,font);
-	                  ausgabe = parser.sunrise.c_str();
-	                  ausgabe = ausgabe;
-	                osd->DrawText(CELLWIDTH - 8, OSDHEIGHT - ((4 * row_y)+5), ausgabe.c_str(), wetterTheme[wetterSetup.w_theme].clrFgText,clrTransparent,font,CELLWIDTH,20,taRight);
-
-			osd->DrawText(8, OSDHEIGHT - ((3 * row_y)+5), tr("Sunset: "), wetterTheme[wetterSetup.w_theme].clrFgText,clrTransparent,font);
-	                  ausgabe = parser.sunset.c_str();
-	                  ausgabe = ausgabe;
-	                osd->DrawText(CELLWIDTH - 8, OSDHEIGHT - ((3 * row_y)+5), ausgabe.c_str(), wetterTheme[wetterSetup.w_theme].clrFgText,clrTransparent,font,CELLWIDTH,20,taRight);
-
-	                  ausgabe = parser.wetter;
-	                osd->DrawText(8, (OSDHEIGHT - (2 * row_y))+2,tr(ausgabe.c_str()), wetterTheme[wetterSetup.w_theme].clrFgText,clrTransparent,font, OSDWIDTH-8, 20, taCenter);
-
-			//right Side
-			osd->DrawText((OSDWIDTH / 2)+8, OSDHEIGHT - ((6 * row_y)+5), tr("Wind comes from: "), wetterTheme[wetterSetup.w_theme].clrFgText,clrTransparent,font);
-			  ausgabe = parser.winddir.c_str();
-			osd->DrawText(OSDWIDTH - CELLWIDTH -8 , OSDHEIGHT - ((6 * row_y)+5), ausgabe.c_str(), wetterTheme[wetterSetup.w_theme].clrFgText,clrTransparent,font,CELLWIDTH,20,taRight);
-
-			osd->DrawText((OSDWIDTH / 2)+8, OSDHEIGHT - ((5 * row_y)+5), tr("Wind speed: "), wetterTheme[wetterSetup.w_theme].clrFgText,clrTransparent,font);
-			  ausgabe = parser.windspeed.c_str();
-			  ausgabe = ausgabe + " ";
-			  ausgabe = ausgabe + parser.speed.c_str();
-			osd->DrawText(OSDWIDTH - CELLWIDTH -8 , OSDHEIGHT - ((5 * row_y)+5), ausgabe.c_str(), wetterTheme[wetterSetup.w_theme].clrFgText,clrTransparent,font,CELLWIDTH,20,taRight);
-
-			osd->DrawText((OSDWIDTH / 2)+8, OSDHEIGHT - ((4 * row_y)+5), tr("Humitidy: "), wetterTheme[wetterSetup.w_theme].clrFgText,clrTransparent,font);
-			  ausgabe = parser.humidity.c_str();
-			  ausgabe = ausgabe + tr(" %");
-			osd->DrawText(OSDWIDTH - CELLWIDTH -8 , OSDHEIGHT - ((4 * row_y)+5), ausgabe.c_str(), wetterTheme[wetterSetup.w_theme].clrFgText,clrTransparent,font,CELLWIDTH,20,taRight);
-
-			osd->DrawText((OSDWIDTH / 2)+8, OSDHEIGHT - ((3 * row_y)+5), tr("Precipitation: "), wetterTheme[wetterSetup.w_theme].clrFgText,clrTransparent,font);
-			  ausgabe = parser.raindown.c_str();
-			  ausgabe = ausgabe + tr(" %");
-			osd->DrawText(OSDWIDTH - CELLWIDTH -8 , OSDHEIGHT - ((3 * row_y)+5), ausgabe.c_str(), wetterTheme[wetterSetup.w_theme].clrFgText,clrTransparent,font,CELLWIDTH,20,taRight);
-
-//			font     =    cFont::GetFont(fontSml);
-
-			if (part==0) {
-				osd->DrawText(((OSDWIDTH-196)/2)-4, (((OSDHEIGHT/2)-196)/2)+204, tr("DAY"), wetterTheme[wetterSetup.w_theme].clrFgBorder, wetterTheme[wetterSetup.w_theme].clrBgBorder,font,204,row_y,taCenter);
-                                if (!inverted) {
-				    osd->DrawBitmap((OSDWIDTH / 2) - (bmNight.Width() / 2), (OSDHEIGHT - (row_y / 2)) - (bmNight.Height() / 2), bmNight, wetterTheme[wetterSetup.w_theme].clrFgBorder, wetterTheme[wetterSetup.w_theme].clrBgBorder); }
-				else {    
-				    osd->DrawBitmap((OSDWIDTH / 2) - (bmNight_inv.Width() / 2), (OSDHEIGHT - (row_y / 2)) - (bmNight_inv.Height() / 2), bmNight_inv, wetterTheme[wetterSetup.w_theme].clrFgBorder, wetterTheme[wetterSetup.w_theme].clrBgBorder); }
-			}
-
-			if (part==1) {
-				osd->DrawText(((OSDWIDTH-196)/2)-4, (((OSDHEIGHT/2)-196)/2)+204, tr("NIGHT"), wetterTheme[wetterSetup.w_theme].clrFgBorder, wetterTheme[wetterSetup.w_theme].clrBgBorder,font,204,row_y,taCenter);
-                                if (!inverted) {
-				    osd->DrawBitmap((OSDWIDTH / 2) - (bmDay.Width() / 2), (OSDHEIGHT - (row_y / 2)) - (bmDay.Height() / 2), bmDay, wetterTheme[wetterSetup.w_theme].clrFgBorder, wetterTheme[wetterSetup.w_theme].clrBgBorder); }
-				else {    
-				    osd->DrawBitmap((OSDWIDTH / 2) - (bmDay_inv.Width() / 2), (OSDHEIGHT - (row_y / 2)) - (bmDay_inv.Height() / 2), bmDay_inv, wetterTheme[wetterSetup.w_theme].clrFgBorder, wetterTheme[wetterSetup.w_theme].clrBgBorder); }
-	                }
-
-			if (day>1){
-                                if (!inverted) {
-				    osd->DrawBitmap(22, (OSDHEIGHT - (row_y / 2)) - (bmLeft.Height() / 2), bmLeft, wetterTheme[wetterSetup.w_theme].clrFgBorder, wetterTheme[wetterSetup.w_theme].clrBgBorder); }
-				else {    
-				    osd->DrawBitmap(22, (OSDHEIGHT - (row_y / 2)) - (bmLeft_inv.Height() / 2), bmLeft_inv, wetterTheme[wetterSetup.w_theme].clrFgBorder, wetterTheme[wetterSetup.w_theme].clrBgBorder); }
-			}
-
-			if (day<10){
-                                if (!inverted) {
-				    osd->DrawBitmap(OSDWIDTH - bmRight.Width() -22 , (OSDHEIGHT - (row_y / 2)) - (bmRight.Height() / 2), bmRight, wetterTheme[wetterSetup.w_theme].clrFgBorder, wetterTheme[wetterSetup.w_theme].clrBgBorder); }
-				else {    
-				    osd->DrawBitmap(OSDWIDTH - bmRight_inv.Width() -22 , (OSDHEIGHT - (row_y / 2)) - (bmRight_inv.Height() / 2), bmRight_inv, wetterTheme[wetterSetup.w_theme].clrFgBorder, wetterTheme[wetterSetup.w_theme].clrBgBorder); }
-			}
-
-			
-			if ( corner == true ) {
-				// Ellipse top left
-				osd->DrawEllipse(0, OSDHEIGHT - ((7 * row_y)+10), 12, (OSDHEIGHT - ((7 * row_y)+10)) +12, clrTransparent, -2);
-				// Ellipse top right
-				osd->DrawEllipse(OSDWIDTH -12, OSDHEIGHT - ((7 * row_y)+10), OSDWIDTH, (OSDHEIGHT - ((7 * row_y)+10))+12, clrTransparent, -1);
-				// Ellipse bottom left
-				osd->DrawEllipse(0, OSDHEIGHT -12, 12, OSDHEIGHT, clrTransparent, -3);
-				// Ellipse bottom right
-				osd->DrawEllipse(OSDWIDTH -12, OSDHEIGHT -12, OSDWIDTH, OSDHEIGHT, clrTransparent, -4);
-				// Ellipse day/night left
-				osd->DrawEllipse(((OSDWIDTH-196)/2)-4, (((OSDHEIGHT/2)-196)/2)+204, ((OSDWIDTH-196)/2)-4+row_y, (((OSDHEIGHT/2)-196)/2)+204+row_y, clrTransparent, -3);
-				// Ellipse day/night right
-				osd->DrawEllipse(((OSDWIDTH-196)/2)+200-row_y, (((OSDHEIGHT/2)-196)/2)+204, ((OSDWIDTH-196)/2)+200, (((OSDHEIGHT/2)-196)/2)+204+row_y, clrTransparent, -4);
-			}
-
-//			if (b){
-//			delete b;
-//			}
-
-			osd->Flush();
-                 }
-		else
-	         {
-			perror(sat_file.c_str());
-
-			osd->DrawText(22, OSDHEIGHT - (7 * row_y), tr("ERROR : NO DATA"), wetterTheme[wetterSetup.w_theme].clrFgText,clrTransparent,font);
-			osd->DrawText(22, OSDHEIGHT - (6 * row_y), tr("PRESS OK to download/update data/radarmaps"), wetterTheme[wetterSetup.w_theme].clrFgText,clrTransparent,font);
-
-			osd->DrawText(22, OSDHEIGHT - (5 * row_y), tr("Path to weatherdata is :"), wetterTheme[wetterSetup.w_theme].clrFgText,clrTransparent,font);
-			osd->DrawText(22, OSDHEIGHT - (4 * row_y), DataDir, wetterTheme[wetterSetup.w_theme].clrFgText,clrTransparent,font);
-
-			osd->DrawText(22, OSDHEIGHT - (3 * row_y), tr("Have you edited weatherng.sh ?"), wetterTheme[wetterSetup.w_theme].clrFgText,clrTransparent,font);
-			osd->DrawText(22, OSDHEIGHT - (2 * row_y), tr("Path to weatherng.sh is :"), wetterTheme[wetterSetup.w_theme].clrFgText,clrTransparent,font);
-			osd->DrawText(22, OSDHEIGHT - row_y, ScriptDir, wetterTheme[wetterSetup.w_theme].clrFgText,clrTransparent,font);
-
-			esyslog("ERROR : weatherng: %s don't exist !\n", sat_file.c_str());
-			osd->Flush();
-		 }
+      eOsdError result = osd->CanHandleAreas(Area, sizeof(Area) / sizeof(tArea));
+      if (result == oeOk) {
+        osd->SetAreas(Area, sizeof(Area) / sizeof(tArea));
 	}
+      else {
+        const char *errormsg = NULL;
+	switch (result) {
+	    case oeTooManyAreas:
+		errormsg = "Too many OSD areas!"; break;
+	    case oeTooManyColors:
+		errormsg = "Too many colors!"; break;
+	    case oeBppNotSupported:
+		errormsg = "Depth not suppoerted!"; break;
+	    case oeAreasOverlap:
+		errormsg = "Areas are overlapped!"; break;
+	    case oeWrongAlignment:
+		errormsg = "Areas not correctly aligned!"; break;
+	    case oeOutOfMemory:
+		errormsg = "OSD memory overflow!"; break;
+	    case oeUnknown:
+		errormsg = "Unknown OSD error!"; break;
+    	    default:
+		break;
+	}	
+        esyslog("weatherng: ERROR : %s: OSD open failed! Can't handle areas (%d)\n",PLUGIN_NAME_I18N, result);
+        if(osd) { delete osd; osd=0; }
+	
+	return;
+      }
+    }
+    else {
+      colordepth  =  14;
+      areadepth   =   4;
 
- 				// debug
+      tArea Area[] = {
+  		{0, 0, osdwidth -1, 2*fh, 2},
+		{0, 2*fh +1, cw -1, 2*fh +8 +196 +8, 2},
+		{cw, 2*fh +1, osdwidth -1, 2*fh +8 +196 +8, areadepth},
+		{0, 2*fh +8 +196 +9, osdwidth -1, 2*fh +8 +128 +9 +3*fh +4*fh +18 -1, 2},
+		{0, 2*fh +8 +128 +9 +3*fh +4*fh +18, osdwidth -1, osdheight -fh -1, 2},
+		{0, osdheight -fh, osdwidth -1, osdheight -1, 4},
+		};
 
-				  dsyslog("DEBUG : weatherng: SHOW\n");
+      eOsdError result = osd->CanHandleAreas(Area, sizeof(Area) / sizeof(tArea));
+      if (result == oeOk) {
+        osd->SetAreas(Area, sizeof(Area) / sizeof(tArea));
+	}
+      else {
+        const char *errormsg = NULL;
+	switch (result) {
+	    case oeTooManyAreas:
+		errormsg = "Too many OSD areas!"; break;
+	    case oeTooManyColors:
+		errormsg = "Too many colors!"; break;
+	    case oeBppNotSupported:
+		errormsg = "Depth not suppoerted!"; break;
+	    case oeAreasOverlap:
+		errormsg = "Areas are overlapped!"; break;
+	    case oeWrongAlignment:
+		errormsg = "Areas not correctly aligned!"; break;
+	    case oeOutOfMemory:
+		errormsg = "OSD memory overflow!"; break;
+	    case oeUnknown:
+		errormsg = "Unknown OSD error!"; break;
+    	    default:
+		break;
+	}	
+        esyslog("weatherng: ERROR : %s: OSD open failed! Can't handle areas (%d)\n",PLUGIN_NAME_I18N, result);
+        if(osd) { delete osd; osd=0; }
+	
+	return;
+      }              
+    }
 
-#ifdef HAVE_IMLIB2
-				  dsyslog("DEBUG : weatherng: USE IMLIB2\n");;
+
+// top field ok
+    osd->DrawRectangle( 0                , 0     , osdwidth -1 , fh -3, clrTopBG);
+    osd->DrawEllipse(   0                , 0     , fh/2        , fh/2 , clrTransparent, -2);
+    osd->DrawEllipse(   osdwidth -1 -fh/2, 0     , osdwidth -1 , fh/2 , clrTransparent, -1);
+    osd->DrawRectangle( 0                , fh -2 , osdwidth -1 , 2*fh , clrBG1);
+    
+// infofield ok
+    osd->DrawRectangle( 0          , 2*fh +1            , cw -1 , 2*fh +8 +196 +8, clrBG1 );
+    osd->DrawRectangle( fh         , 2*fh +1            , cw -1 , 2*fh +8 +196 +8, clrBG2 );
+    osd->DrawEllipse(   fh         , 2*fh +1            , fh +10, 2*fh +1 +10    , clrBG1, -2);
+    osd->DrawEllipse(   (cw -1) -10, 2*fh +1            , cw -1 , 2*fh +1 +10    , clrBG1, -1);
+    osd->DrawEllipse(   fh         , 2*fh +8 +196 +8 -10, fh +10, 2*fh +8 +196 +8, clrBG1, -3);
+    osd->DrawEllipse(   (cw -1) -10, 2*fh +8 +196 +8 -10, cw -1 , 2*fh +8 +196 +8, clrBG1, -4);
+    
+// iconfield ok
+    osd->DrawRectangle( cw                   , 2*fh +1            , osdwidth -1      , 2*fh +8 +196 +8, clrBG1);
+    osd->DrawRectangle( cw +10               , 2*fh +1            , (osdwidth -1) -fh, 2*fh +8 +196 +8, clrBG2);
+    osd->DrawEllipse(   cw +10               , 2*fh +1            , cw +20           , 2*fh +1 +10    , clrBG1, -2);
+    osd->DrawEllipse(   (osdwidth -1) -fh -10, 2*fh +1            , (osdwidth -1) -fh, 2*fh +1 +10    , clrBG1, -1);
+    osd->DrawEllipse(   cw +10               , 2*fh +8 +196 +8 -10, cw +20           , 2*fh +8 +196 +8, clrBG1, -3);
+    osd->DrawEllipse(   (osdwidth -1) -fh -10, 2*fh +8 +196 +8 -10, (osdwidth -1) -fh, 2*fh +8 +196 +8, clrBG1, -4);
+
+// textfield ok
+    osd->DrawRectangle( 0,  2*fh +8 +196 +9    , osdwidth -1     , 2*fh +8 +128 +9 +3*fh +4*fh +18 -1, clrBG1 );
+    osd->DrawRectangle( fh, 2*fh +8 +196 +9 +10, (osdwidth -1)-fh, 2*fh +8 +128 +9 +3*fh +4*fh +18 -8 -1, clrBG2 );
+    osd->DrawEllipse(   fh, 2*fh +8 +196 +9 +10, fh +10          , 2*fh +8 +196 +9 +20      , clrBG1, -2);
+    osd->DrawEllipse(   (osdwidth -1) -fh -10, 2*fh +8 +196 +9 +10          , (osdwidth -1) -fh, 2*fh +8 +196 +9 +20      , clrBG1, -1);
+    osd->DrawEllipse(   fh                   , 2*fh +8 +128 +9 +3*fh +4*fh +18 -8 -1 -10, fh +10           , 2*fh +8 +128 +9 +3*fh +4*fh +18 -8 -1, clrBG1, -3);
+    osd->DrawEllipse(   (osdwidth -1) -fh -10, 2*fh +8 +128 +9 +3*fh +4*fh +18 -8 -1 -10, (osdwidth -1) -fh, 2*fh +8 +128 +9 +3*fh +4*fh +18 -8 -1, clrBG1, -4);
+
+// datefield ok
+    osd->DrawRectangle( 0                    , 2*fh +8 +128 +9 +3*fh +4*fh +18           , osdwidth -1        , osdheight -fh -1     , clrBG1);
+    osd->DrawRectangle( fh                   , 2*fh +8 +128 +9 +3*fh +4*fh +18           , (osdwidth -1) -fh  , 2*fh +8 +128 +9 +3*fh +4*fh +18 +64 -1 -fh , clrBG2);
+    osd->DrawEllipse(   fh                   , 2*fh +8 +128 +9 +3*fh +4*fh +18           , fh + 10            , 2*fh +8 +128 +9 +3*fh +4*fh +28            , clrBG1 , -2);
+    osd->DrawEllipse(   (osdwidth -1) -fh -10, 2*fh +8 +128 +9 +3*fh +4*fh +18           , (osdwidth -1) -fh  , 2*fh +8 +128 +9 +3*fh +4*fh +28            , clrBG1 , -1);
+    osd->DrawEllipse(   fh                   , 2*fh +8 +128 +9 +3*fh +4*fh +8 +64 -1 -fh , fh +10             , 2*fh +8 +128 +9 +3*fh +4*fh +18 +64 -1 -fh , clrBG1 , -3);
+    osd->DrawEllipse(   (osdwidth -1) -fh -10, 2*fh +8 +128 +9 +3*fh +4*fh +8 +64 -1 -fh , (osdwidth -1) -fh  , 2*fh +8 +128 +9 +3*fh +4*fh +18 +64 -1 -fh , clrBG1 , -4);
+
+//bottom ok
+    osd->DrawRectangle( 0                 , osdheight -fh , osdwidth -1, osdheight -1, clrStatusBG);
+    osd->DrawEllipse(   0                 , osdheight -fh , fh/2       , osdheight -1, clrTransparent, -3);
+    osd->DrawEllipse(   osdwidth -1 -fh/2 , osdheight -fh , osdwidth -1, osdheight -1, clrTransparent, -4);
+
+
+// show the buttons
+    ShowStatusButtons(0);
+
+
+    BOOL ex = if_exist_file(sat_file.c_str());
+    if (ex) {
+      dsyslog("DEBUG : weatherng: Parse %s !\n", sat_file.c_str());
+      cxmlParse parser;
+      dsyslog("DEBUG : weatherng: day: %i\n",day);	
+      parser.xmlParse((int) day, DataDir, data_file, part);
+
+      if(!show_wait) {
+        file = ImageDir;
+
+        if(wetterSetup.w_hiquality)
+          file = file  + "/hqimages/";
+        else
+          file = file  + "/images/";
+
+        file = file + parser.icon.c_str();
+        file = file + ".png";
+
+        cWeatherBitmap *bmp;
+        if((bmp = cWeatherBitmap::Load(file.c_str(), wetterSetup.w_alpha, 196, 196, colordepth )) != NULL)
+          osd->DrawBitmap(  cw +14 , 2*fh +1 +5, bmp->Get(),clrTransparent,clrTransparent);
+        }
+      else {
+	file = ImageDir;
+
+        if(wetterSetup.w_hiquality)
+          file = file  + "/hqimages/wait.png";
+        else
+          file = file  + "/images/wait.png";
+	  
+        cWeatherBitmap *bmp;
+        if((bmp = cWeatherBitmap::Load(file.c_str(), wetterSetup.w_alpha, 196, 196, colordepth )) != NULL)
+          osd->DrawBitmap(  cw +14 , 2*fh +1 +5, bmp->Get(),clrTransparent,clrTransparent);
+      }
+
+
+//text
+//    osd->DrawRectangle( fh, 2*fh +8 +196 +9 +10, (osdwidth -1)-fh, 2*fh +8 +128 +9 +3*fh +4*fh +18 -8 -1, clrBG2 );
+
+      osd->DrawText(fh +10, 2*fh +1 +5, tr("High temperature: "), clrHighFG,clrBG2,font);
+      ausgabe = parser.hi.c_str();
+      ausgabe = ausgabe + " ";
+      ausgabe = ausgabe + tr(parser.celsius.c_str());
+      osd->DrawText(cw -1 -5 -CELLWIDTH, 2*fh +1 +5, ausgabe.c_str(), clrHighFG,clrBG2,font,CELLWIDTH,fh,taRight);
+
+      osd->DrawText(fh +10, 2*fh +1 +5 +fh, tr("Low temperature: "), clrDateFG,clrBG2,font);
+      ausgabe = parser.low.c_str();
+      ausgabe = ausgabe + " ";
+      ausgabe = ausgabe + tr(parser.celsius.c_str());
+      osd->DrawText(cw -1 -5 -CELLWIDTH, 2*fh +1 +5 +fh, ausgabe.c_str(), clrDateFG,clrBG2,font,CELLWIDTH,fh,taRight);
+
+      osd->DrawText(fh +10, 2*fh +1 +5 +2*fh, tr("Wind comes from: "), clrDateFG,clrBG2,font);
+      ausgabe = parser.winddir.c_str();
+      osd->DrawText(cw -1 -5 -CELLWIDTH , 2*fh +1 +5 +2*fh, ausgabe.c_str(), clrDateFG,clrBG2,font,CELLWIDTH,fh,taRight);
+
+      osd->DrawText(fh +10, 2*fh +1 +5 +3*fh, tr("Wind speed: "), clrDateFG,clrBG2,font);
+      ausgabe = parser.windspeed.c_str();
+      ausgabe = ausgabe + " ";
+      ausgabe = ausgabe + parser.speed.c_str();
+      osd->DrawText(cw -1 -5 -CELLWIDTH , 2*fh +1 +5 +3*fh, ausgabe.c_str(), clrDateFG,clrBG2,font,CELLWIDTH,fh,taRight);
+
+      osd->DrawText(fh +10, 2*fh +1 +5 +4*fh, tr("Humidity: "), clrDateFG,clrBG2,font);
+      ausgabe = parser.humidity.c_str();
+      ausgabe = ausgabe/* + tr(" %")*/;
+      osd->DrawText(cw -1 -5 -CELLWIDTH , 2*fh +1 +5 +4*fh, ausgabe.c_str(), clrDateFG,clrBG2,font,CELLWIDTH,fh,taRight);
+
+      osd->DrawText(fh +10, 2*fh +1 +5 +5*fh, tr("Precipitation: "), clrDateFG,clrBG2,font);
+      ausgabe = parser.raindown.c_str();
+      ausgabe = ausgabe + tr(" %");
+      osd->DrawText(cw -1 -5 -CELLWIDTH , 2*fh +1 +5 +5*fh, ausgabe.c_str(), clrDateFG,clrBG2,font,CELLWIDTH,fh,taRight);
+
+
+      if (part==0) {
+        osd->DrawText( 10, 0, tr("DAY"), clrIconFG, clrTopBG,font,osdwidth -fh,fh,taCenter);
+
+        ausgabe = tr("On  ");
+        ausgabe = ausgabe + tr(parser.dayname.c_str()) + " " + parser.date + "  ";
+        ausgabe = ausgabe + tr("in ");
+        ausgabe = ausgabe + parser.ort.c_str() + tr(" dayover");
+
+        osd->DrawText( fh +10, 3*fh +1 +5 +6*fh, ausgabe.c_str(), clrTextFG, clrBG2,font, (osdwidth -2*fh -15) ,fh,taLeft);
+
+        ausgabe = parser.wetter;
+        osd->DrawText( fh +10, 4*fh +1 +5 +6*fh, tr(ausgabe.c_str()), clrTextFG, clrBG2,font, (osdwidth -2*fh -15) ,fh,taLeft);
+
+        ausgabe = tr("The temperature varies between  ");
+        ausgabe = ausgabe + parser.hi.c_str() + tr("  and  ");
+        ausgabe = ausgabe + parser.low.c_str() + tr("  Grad");
+        osd->DrawText( fh +10, 5*fh +1 +5 +6*fh, ausgabe.c_str(), clrTextFG, clrBG2,font, (osdwidth -2*fh -15) ,fh,taLeft);
+
+        ausgabe = tr("The sun comes up at  ");
+        ausgabe = ausgabe + parser.sunrise.c_str() + tr(" and goes at  ");
+        ausgabe = ausgabe + parser.sunset.c_str() + tr(" down");
+        osd->DrawText( fh +10, 6*fh +1 +5 +6*fh, ausgabe.c_str(), clrTextFG, clrBG2,font, (osdwidth -2*fh -15) ,fh,taLeft);
+      }
+
+      if (part==1) {
+//        osd->DrawText( cw +10 +20, 2*fh +1, tr("NIGHT"), clrIconFG, clrBG2,font,170,20,taCenter);
+        osd->DrawText( 10, 0, tr("NIGHT"), clrIconFG, clrTopBG,font,osdwidth -20,20,taCenter);
+
+        ausgabe = tr("On  ");
+        ausgabe = ausgabe + tr(parser.dayname.c_str()) + " " + parser.date + "  ";
+        ausgabe = ausgabe + tr("in ");
+        ausgabe = ausgabe + parser.ort.c_str() + tr(" nightover");
+        osd->DrawText( fh +10, 3*fh +1 +5 +6*fh, ausgabe.c_str(), clrTextFG, clrBG2,font, (osdwidth -2*fh -15) ,20,taLeft);
+
+        ausgabe = parser.wetter;
+        osd->DrawText( fh +10, 4*fh +1 +5 +6*fh, tr(ausgabe.c_str()), clrTextFG, clrBG2,font, (osdwidth -2*fh -15) ,20,taLeft);
+
+        ausgabe = tr("The temperature varies between  ");
+        ausgabe = ausgabe + parser.hi.c_str() + tr("  and  ");
+        ausgabe = ausgabe + parser.low.c_str() + tr("  Grad");
+        osd->DrawText( fh +10, 5*fh +1 +5 +6*fh, ausgabe.c_str(), clrTextFG, clrBG2,font, (osdwidth -2*fh -15) ,20,taLeft);
+
+        ausgabe = tr("The sun comes up at  ");
+        ausgabe = ausgabe + parser.sunrise.c_str() + tr(" and goes at  ");
+        ausgabe = ausgabe + parser.sunset.c_str() + tr(" down");
+        osd->DrawText( fh +10, 6*fh +1 +5 +6*fh, ausgabe.c_str(), clrTextFG, clrBG2,font, (osdwidth -2*fh -15) ,20,taLeft);
+      }
+
+
+      dsyslog("DEBUG : weatherng: Information about: %s\n",parser.ort.c_str());
+      // left Side
+      ausgabe = tr("Weather for: ");
+      ausgabe = ausgabe + parser.ort.c_str() + "  /  ";
+      ausgabe = ausgabe + tr(parser.dayname.c_str());
+      ausgabe = ausgabe + "  (" + parser.date + ")";
+      osd->DrawText( fh +10, 2*fh +8 +128 +9 +3*fh +4*fh +18 +8, ausgabe.c_str(), clrDateFG, clrBG2,font, (osdwidth -2*fh -15) ,20,taCenter);
+
+    }
+
+  ShowStatusButtons(0);
+  osd->Flush();
+
+  }
+
+  // debug
+  dsyslog("DEBUG : weatherng: SHOW\n");
+#ifdef USE_MAGICK
+  dsyslog("DEBUG : weatherng: USE IMAGEMAGICK\n");;
+#else
+  dsyslog("DEBUG : weatherng: USE IMLIB2\n");;
 #endif
-#ifdef HAVE_MAGICK
-				  dsyslog("DEBUG : weatherng: USE IMAGEMAGICK\n");;
-#endif
-#ifdef HAVE_4MB
-				  dsyslog("DEBUG : weatherng: 256 COLORS ENABLED  = %i\n", hicolor);
-#endif
-				  dsyslog("DEBUG : weatherng: AREADEPTH   = %i\n", areadepth);
-				  dsyslog("DEBUG : weatherng: COLORDEPTH = %i\n", colordepth);
-				  dsyslog("DEBUG : weatherng: RADAR_LEFT = %i\n", Radar_left);
-				  dsyslog("DEBUG : weatherng: RADAR_TOP  = %i\n", Radar_top);
-				  dsyslog("DEBUG : weatherng: RADAR_WIDTH  = %i\n", Radar_width);
-				  dsyslog("DEBUG : weatherng: RADAR_HEIGHT  = %i\n", Radar_height);
+  dsyslog("DEBUG : weatherng: AREADEPTH   = %i\n", areadepth);
+  dsyslog("DEBUG : weatherng: COLORDEPTH = %i\n", colordepth);
+  dsyslog("DEBUG : weatherng: RADAR_LEFT = %i\n", Radar_left);
+  dsyslog("DEBUG : weatherng: RADAR_TOP  = %i\n", Radar_top);
+  dsyslog("DEBUG : weatherng: RADAR_WIDTH  = %i\n", Radar_width);
+  dsyslog("DEBUG : weatherng: RADAR_HEIGHT  = %i\n", Radar_height);
+}
 
 
 
-//return EXIT_SUCCESS;	
+void cWetterOsd::ChangeRadar(int Radar)
+{
+  radar = Radar;
+  
+  switch (radar) {
+	case 0:
+	    Radarmap="/pic0";
+	    cWetterOsd::Satelite();
+	    break;
+
+	case 1:
+	    Radarmap="/pic1";
+	    cWetterOsd::Satelite();
+	    break;
+
+	case 2:
+	    Radarmap="/pic2";
+	    cWetterOsd::Satelite();
+	    break;
+
+	case 3:
+	    Radarmap="/pic3";
+	    cWetterOsd::Satelite();
+	    break;
+
+	case 4:
+	    Radarmap="/pic4";
+	    cWetterOsd::Satelite();
+	    break;
+
+	case 5:
+	    Radarmap="/pic5";
+	    cWetterOsd::Satelite();
+	    break;
+  }
+}
+
+
+eOSState cWetterOsd::ProcessKey(eKeys Key)
+{
+  eOSState state = cOsdObject::ProcessKey(Key);
+  if (state == osUnknown) {
+//     switch (Key & ~k_Repeat) {
+     switch (Key) {
+       case kLeft: 
+                        if(IsSatelite) {
+			    if(radar==0) {
+			      ChangeRadar(5);
+			      }
+			    else if(radar==1) {
+			      ChangeRadar(0);
+			      }  
+			    else if(radar==2) {
+			      ChangeRadar(1);
+			      }  
+			    else if(radar==3) {
+			      ChangeRadar(2);
+			      }  
+			    else if(radar==4) {
+			      ChangeRadar(3);
+			      }  
+			    else if(radar==5) {
+			      ChangeRadar(4);
+			      }  
+			  }
+			else {  
+			    day--;
+			    if (day<1){
+			      day=1;
+			    }
+			    cWetterOsd::Show();  
+			}    
+		        break;
+       case kRight: 
+                        if(IsSatelite) {
+			    if(radar==0) {
+			      ChangeRadar(1);
+			      }
+			    else if(radar==1) {
+			      ChangeRadar(2);
+			      }  
+			    else if(radar==2) {
+			      ChangeRadar(3);
+			      }  
+			    else if(radar==3) {
+			      ChangeRadar(4);
+			      }  
+			    else if(radar==4) {
+			      ChangeRadar(5);
+			      }  
+			    else if(radar==5) {
+			      ChangeRadar(0);
+			      }  
+			  }
+                        else {
+                	    day++;
+              		    if (day>DAY){
+                	      day=DAY;
+                	    }
+			    cWetterOsd::Show();
+			}    
+		        break;
+       case kBack:
+		        if(IsSatelite==true){
+                            ShowStatusButtons(0);
+			    cWetterOsd::Show();
+		            }
+		        else{
+		            return osEnd;
+		        }
+		        break;
+
+	case kRed:
+                        if(showbuttons==0 && !IsSatelite) {
+                            if(part==0) {
+                	        part++;
+                	        if (part>1){
+                	          part=1;
+                	        }
+                              }
+                            else if(part==1) {
+			        part--;
+                	        if (part<0){
+                	          part=0;
+                	        }
+                            }
+                	    cWetterOsd::Show();
+                          }
+                        else if(showbuttons==1) {
+		            if(IsSatelite==true){ IsSatelite = false; }
+			    data_file  = "/data1.xml";
+			    cWetterOsd::Show();
+			}
+		        break;
+	case kGreen:
+                        if(showbuttons==0 && !IsSatelite) {
+		            if(IsSatelite==true) {
+        		      IsSatelite = false; 
+			      cWetterOsd::Show();
+		              }
+		            else {
+                              show_wait = true;
+			      cWetterOsd::Show();
+
+			      cWetterOsd::GetData();
+                              show_wait = false;
+			      cWetterOsd::Show();
+		            }
+                          }
+                        else if(showbuttons==1) {
+		            if(IsSatelite==true){IsSatelite = false; }
+			    data_file  = "/data2.xml";
+			    cWetterOsd::Show();
+			  }
+		        break;
+	case kYellow:
+                        if(showbuttons==0 && !IsSatelite) {
+			    IsSatelite=true;
+		            ChangeRadar(0);
+                          }
+                        else if(showbuttons==1) {
+		            if(IsSatelite==true){ IsSatelite =false; }
+			    data_file  = "/data3.xml";
+			    cWetterOsd::Show();
+			  }
+		        break;
+	case kBlue:
+                        if(showbuttons==0 && !IsSatelite) {
+			    ShowStatusButtons(1);
+                            osd->Flush();
+                          }
+			else if(showbuttons==1) {
+			    ShowStatusButtons(0);
+                            osd->Flush();
+			}    
+ 		        break;
+	default: return state;
+       }
+     state = osContinue;
+     }
+  return state;
 }

@@ -7,9 +7,47 @@
  */
 
 #include <getopt.h>
+#include <string>
+
+#include <vdr/plugin.h>
+
 #include "setup.h"
-#include "weatherng.h" 
+#include "OsdWeather.h"
+#include "skin.h"
 #include "vars.h"
+
+
+
+static const char *VERSION        = "0.0.10";
+static const char *DESCRIPTION    = trNOOP("Weather.com: Weather forecast");
+static const char *MAINMENUENTRY  = trNOOP("Weather-NG");
+
+class cPluginWetter : public cPlugin {
+private:
+
+ // Add any member variables or functions you may need here.
+public:
+  cPluginWetter(void);
+  virtual ~cPluginWetter();
+  virtual const char *Version(void) { return VERSION; }
+  virtual const char *Description(void) { return tr(DESCRIPTION); }
+  virtual const char *CommandLineHelp(void);
+  virtual bool ProcessArgs(int argc, char *argv[]);
+  virtual bool Initialize(void);
+  virtual bool Start(void);
+  virtual void Housekeeping(void);
+  virtual const char *MainMenuEntry(void) { return tr(MAINMENUENTRY); }
+  virtual cOsdObject *MainMenuAction(void);
+  virtual cMenuSetupPage *SetupMenu(void);
+  virtual bool SetupParse(const char *Name, const char *Value);
+  };
+
+class cMenuWetterSetup : public cMenuSetupPage {
+ protected:
+   virtual void Store(void);
+ public:
+   cMenuWetterSetup(void);
+};
 
 
 cPluginWetter::cPluginWetter(void)
@@ -33,7 +71,8 @@ const char *cPluginWetter::CommandLineHelp(void)
        asprintf(&help_str,
 			  "  -D DIR    --data=DIR    DIR to datafiles of plugin.  e.g. /etc/plugins/weatherng\n"
 			  "  -I DIR    --images=DIR  DIR to imagefolder of plugin e.g. /etc/plugins/weatherng\n"
-			  "  -S DIR    --script=DIR  DIR to weatherng.sh  e.g. /usr/local/bin\n");
+			  "  -C DIR    --config=DIR  DIR to own configuration     e.g. /etc/plugins/weatherng\n"
+			  "  -S DIR    --script=DIR  DIR to weatherng.sh          e.g. /usr/local/bin\n");
   return help_str;         
 }
 
@@ -41,15 +80,17 @@ bool cPluginWetter::ProcessArgs(int argc, char *argv[]) {
   static struct option long_options[] = {
        { "data",	required_argument, NULL, 'D' },
        { "images",	required_argument, NULL, 'I' },
+       { "config",	required_argument, NULL, 'C' },
        { "script",	required_argument, NULL, 'S' },
        { NULL }
      };
      
   int c, option_index = 0;
-  while ((c = getopt_long(argc, argv, "D:I:S:", long_options, &option_index)) != -1) {
+  while ((c = getopt_long(argc, argv, "D:I:C:S:", long_options, &option_index)) != -1) {
           switch (c) {
 	  case 'D': DataDir        = optarg; break;
 	  case 'I': ImageDir       = optarg; break;
+	  case 'C': config_path    = optarg; break;
 	  case 'S': ScriptDir      = optarg; break;
 	  default: return false;
 	  }		    
@@ -69,22 +110,36 @@ bool cPluginWetter::Initialize(void)
           esyslog("%s: Parameter '-I' not set.\n"
 	          " Set default value : %s\n", PLUGIN_NAME_I18N, ImageDir);
   }
+
+  if (config_path == NULL) {
+          config_path = strdup(ConfigDirectory(PLUGIN_NAME_I18N));	         
+          esyslog("%s: Parameter '-C' not set.\n"
+	          " Set default value : %s\n", PLUGIN_NAME_I18N, config_path);
+  }
+
   if (ScriptDir == NULL) {
           ScriptDir = strdup(ConfigDirectory(PLUGIN_NAME_I18N));	         
           esyslog("%s: Parameter '-S' not set.\n"
 	          " Set default value : %s\n", PLUGIN_NAME_I18N, ImageDir);
   }
-#ifdef HAVE_MAGICK
-  dsyslog("DEBUG : %s: defined HAVE_MAGICK\n",PLUGIN_NAME_I18N);  
+
+
+  if(!WeatherSkin.ParseSkin("current.colors")) {
+    esyslog("weatherng: WARNING: no themefile found ! Using default colors");
+    printf("weatherng: no themefile found !\n");
+    }
+  else isyslog("weatherng: Loading themefile\n");    
+  
+#ifdef USE_MAGICK
+  dsyslog("DEBUG : %s: defined USE_MAGICK\n",PLUGIN_NAME_I18N);  
+#else
+  dsyslog("DEBUG : %s: defined USE_IMLIB2\n",PLUGIN_NAME_I18N);  
 #endif
 
-#ifdef HAVE_IMLIB2
-  dsyslog("DEBUG : %s: defined HAVE_IMLIB2\n",PLUGIN_NAME_I18N);  
-#endif
-
-#ifdef HAVE_4MB
-  dsyslog("DEBUG : %s: defined HAVE_4MB\n",PLUGIN_NAME_I18N);  
-#endif    
+  if(wetterSetup.w_hiquality)
+    dsyslog("DEBUG : %s: use HiQuality\n",PLUGIN_NAME_I18N);  
+  else
+    dsyslog("DEBUG : %s: use LowQuality\n",PLUGIN_NAME_I18N);  
   
   return true;
 }
@@ -94,14 +149,14 @@ bool cPluginWetter::Start(void)
   if ( wetterSetup.w_update == true ) {
      FILE *cmd;
      char *buffer;
-	
-	asprintf(&buffer, "%s%s &", ScriptDir, "/weatherng.sh");
+
+       asprintf(&buffer, "%s%s '%s' '%s' '%s'",ScriptDir,"/weatherng.sh", wetterSetup.w_id1, wetterSetup.w_id2, wetterSetup.w_id3);	
+//	asprintf(&buffer, "%s%s &", ScriptDir, "/weatherng.sh");
 	cmd = popen(buffer, "r");
 	dsyslog("DEBUG : %s: Executing as autoupdate: '%s'", PLUGIN_NAME_I18N, buffer);
 	free(buffer);
 	pclose(cmd);
   }	
-  RegisterI18n(Phrases);
   return true;
 }
 
@@ -122,25 +177,26 @@ cMenuSetupPage *cPluginWetter::SetupMenu(void)
 bool cPluginWetter::SetupParse(const char *Name, const char *Value)
  {
   if      (!strcasecmp(Name, "AutoUpdate"))    wetterSetup.w_update      = atoi(Value);
+  else if (!strcasecmp(Name, "HiQuality"))     wetterSetup.w_hiquality   = atoi(Value);
   else if (!strcasecmp(Name, "RadarLeft"))     wetterSetup.w_left        = atoi(Value);
   else if (!strcasecmp(Name, "RadarTop"))      wetterSetup.w_top         = atoi(Value);
   else if (!strcasecmp(Name, "RadarWidth"))    wetterSetup.w_width       = atoi(Value);
   else if (!strcasecmp(Name, "RadarHeight"))   wetterSetup.w_height      = atoi(Value);
-#ifdef HAVE_4MB
-  else if (!strcasecmp(Name, "HiColor"))       wetterSetup.w_hicolor     = atoi(Value);
-#endif
-  else if (!strcasecmp(Name, "Fontsize"))      wetterSetup.w_fontsize    = atoi(Value);
-  else if (!strcasecmp(Name, "RoundedCorner")) wetterSetup.w_corner      = atoi(Value);
-  else if (!strcasecmp(Name, "Inverted"))      wetterSetup.w_inverted    = atoi(Value);
   else if (!strcasecmp(Name, "OSDOffsetX"))    wetterSetup.w_osdoffset_x = atoi(Value);
   else if (!strcasecmp(Name, "OSDOffsetY"))    wetterSetup.w_osdoffset_y = atoi(Value);
-  else if (!strcasecmp(Name, "Theme"))         wetterSetup.w_theme       = atoi(Value);
   else if (!strcasecmp(Name, "ImgDither"))     wetterSetup.w_dither      = atoi(Value);
   else if (!strcasecmp(Name, "ImgAlpha"))      wetterSetup.w_alpha       = atoi(Value);
-#ifdef HAVE_MAGICK
-  else if (!strcasecmp(Name, "ImgMaxCacheFill"))  wetterSetup.w_maxcachefill= atoi(Value);
+#ifdef USE_MAGICK
   else if (!strcasecmp(Name, "ImgTreeDepth"))     wetterSetup.w_treedepth   = atoi(Value);
 #endif
+
+  else if (!strcasecmp(Name, "ID1"))            strn0cpy(wetterSetup.w_id1,      Value, sizeof(wetterSetup.w_id1));
+  else if (!strcasecmp(Name, "ID2"))            strn0cpy(wetterSetup.w_id2,      Value, sizeof(wetterSetup.w_id2));
+  else if (!strcasecmp(Name, "ID3"))            strn0cpy(wetterSetup.w_id3,      Value, sizeof(wetterSetup.w_id3));
+  else if (!strcasecmp(Name, "ID1_NAME"))       strn0cpy(wetterSetup.w_id1_name, Value, sizeof(wetterSetup.w_id1_name));
+  else if (!strcasecmp(Name, "ID2_NAME"))       strn0cpy(wetterSetup.w_id2_name, Value, sizeof(wetterSetup.w_id2_name));
+  else if (!strcasecmp(Name, "ID3_NAME"))       strn0cpy(wetterSetup.w_id3_name, Value, sizeof(wetterSetup.w_id3_name));
+
   else 
        return false;
 
@@ -150,65 +206,65 @@ bool cPluginWetter::SetupParse(const char *Name, const char *Value)
 
 cMenuWetterSetup::cMenuWetterSetup(void)
 {
-  themes[eWetterThemeClassic]          = tr("Classic");
-  themes[eWetterThemeenElchi]          = tr("enElchi");
-  themes[eWetterThemeMoronimo]         = tr("Moronimo");
-  themes[eWetterThemeDeepBlue]         = tr("DeepBlue");
-  themes[eWetterThemeEnigma]           = tr("Enigma");
-  themes[eWetterThemeSilverGreen]      = tr("SilverGreen");
-  themes[eWetterThemeMoronimoMKII]     = tr("MoronimoMKII");
+
+  static const char char_allowed[] = { "abcdefghijklmnopqrstuvwxyz0123456789-_@~!.:\\/" };
   
-  
-  Add(new cMenuEditBoolItem(tr("Update data on start"),          &wetterSetup.w_update));
-  Add(new cMenuEditIntItem(tr("Radarbitmap left"),                  &wetterSetup.w_left, 1, 200));
-  Add(new cMenuEditIntItem(tr("Radarbitmap top"),                   &wetterSetup.w_top, 1, 200));
-#ifdef HAVE_4MB
-// 4 MB FF-CARD
-  Add(new cMenuEditIntItem(tr("Radarbitmap width"),                 &wetterSetup.w_width, 100, 672));
-  Add(new cMenuEditIntItem(tr("Radarbitmap height"),                &wetterSetup.w_height, 100, 567));
-  Add(new cMenuEditBoolItem(tr("Use 256 colors for radarmaps"),      &wetterSetup.w_hicolor));
-#else
-// 2 MB FF-CARD
-  Add(new cMenuEditIntItem(tr("Radarbitmap width"),                 &wetterSetup.w_width, 100, 450));
-  Add(new cMenuEditIntItem(tr("Radarbitmap height"),                &wetterSetup.w_height, 100, 400));
+  Add(new cMenuEditBoolItem(tr("Update data on start"),            &wetterSetup.w_update));
+  Add(new cMenuEditBoolItem(tr("Use one 8-bit area"),              &wetterSetup.w_hiquality));
+  Add(new cMenuEditIntItem(tr("Radarbitmap left"),                 &wetterSetup.w_left, 1, 200));
+  Add(new cMenuEditIntItem(tr("Radarbitmap top"),                  &wetterSetup.w_top, 1, 200));
+  if(wetterSetup.w_hiquality) {
+    // 4 MB FF-CARD
+    Add(new cMenuEditIntItem(tr("Radarbitmap width"),              &wetterSetup.w_width, 100, 1900));
+    Add(new cMenuEditIntItem(tr("Radarbitmap height"),             &wetterSetup.w_height, 100, 1000));
+    }
+  else {
+    // 2 MB FF-CARD
+    Add(new cMenuEditIntItem(tr("Radarbitmap width"),              &wetterSetup.w_width, 100, 450));
+    Add(new cMenuEditIntItem(tr("Radarbitmap height"),             &wetterSetup.w_height, 100, 400));
+  }
+  Add(new cMenuEditIntItem(tr("Offset horizontal"),                &wetterSetup.w_osdoffset_x, -50, 50));
+  Add(new cMenuEditIntItem(tr("Offset vertical"),                  &wetterSetup.w_osdoffset_y, -50, 0));
+  Add(new cMenuEditBoolItem(tr("Use dithering for images"),        &wetterSetup.w_dither));
+  Add(new cMenuEditIntItem(tr("Transparency for images"),          &wetterSetup.w_alpha, 1, 255));
+#ifdef USE_MAGICK
+  Add(new cMenuEditIntItem(tr("Image quality >=slower"),           &wetterSetup.w_treedepth, 1, 6));
 #endif
-  Add(new cMenuEditBoolItem(tr("Use small fonts"),                  &wetterSetup.w_fontsize));
-  Add(new cMenuEditBoolItem(tr("Corner rounded"),                   &wetterSetup.w_corner));
-  Add(new cMenuEditBoolItem(tr("Symbols inverted"),                 &wetterSetup.w_inverted));
-  Add(new cMenuEditIntItem(tr("Offset horizontal"),                 &wetterSetup.w_osdoffset_x, -50, 50));
-  Add(new cMenuEditIntItem(tr("Offset vertical"),                   &wetterSetup.w_osdoffset_y, -50, 0));
-  Add(new cMenuEditIntItem(tr("Transparency for images"),           &wetterSetup.w_alpha, 1, 255));
-  Add(new cMenuEditBoolItem(tr("Use dithering for images"),         &wetterSetup.w_dither));
-#ifdef HAVE_MAGICK
-  Add(new cMenuEditIntItem(tr("Image quality >=slower"),            &wetterSetup.w_treedepth, 1, 6));
-  Add(new cMenuEditIntItem(tr("Imagecache in MByte"),               &wetterSetup.w_maxcachefill, 1, 5));
-#endif
-  Add(new cMenuEditStraItem(tr("Theme"),                            &wetterSetup.w_theme, eWetterThemeMaxNumber, themes));
+
+  Add(new cMenuEditStrItem(tr("Location 1 (ID)"),                  wetterSetup.w_id1,      64, char_allowed));
+  Add(new cMenuEditStrItem(tr("Location 1 (Name)"),                wetterSetup.w_id1_name, 64, char_allowed));
+  Add(new cMenuEditStrItem(tr("Location 2 (ID)"),                  wetterSetup.w_id2,      64, char_allowed));
+  Add(new cMenuEditStrItem(tr("Location 2 (Name)"),                wetterSetup.w_id2_name, 64, char_allowed));
+  Add(new cMenuEditStrItem(tr("Location 3 (ID)"),                  wetterSetup.w_id3,      64, char_allowed));
+  Add(new cMenuEditStrItem(tr("Location 3 (Name)"),                wetterSetup.w_id3_name, 64, char_allowed));
+
 }    
 
 
 void cMenuWetterSetup::Store(void)
 {
   SetupStore("AutoUpdate",	wetterSetup.w_update);
+  SetupStore("HiQuality",	wetterSetup.w_hiquality);
   SetupStore("RadarLeft",       wetterSetup.w_left);
   SetupStore("RadarTop",        wetterSetup.w_top);
   SetupStore("RadarWidth",      wetterSetup.w_width);
   SetupStore("RadarHeight",     wetterSetup.w_height);
-#ifdef HAVE_4MB
-  SetupStore("HiColor",		wetterSetup.w_hicolor);
-#endif
-  SetupStore("Fontsize",        wetterSetup.w_fontsize);
-  SetupStore("RoundedCorner",   wetterSetup.w_corner);	
-  SetupStore("Inverted",        wetterSetup.w_inverted);
   SetupStore("OSDOffsetX",      wetterSetup.w_osdoffset_x);
   SetupStore("OSDOffsetY",      wetterSetup.w_osdoffset_y);
-  SetupStore("Theme",           wetterSetup.w_theme);
-  SetupStore("ImgAlpha",        wetterSetup.w_alpha);
   SetupStore("ImgDither",       wetterSetup.w_dither);
-#ifdef HAVE_MAGICK
-  SetupStore("ImgMaxCacheFill",    wetterSetup.w_maxcachefill);
-  SetupStore("ImgTreeDepth",       wetterSetup.w_treedepth);
+  SetupStore("ImgAlpha",        wetterSetup.w_alpha);
+#ifdef USE_MAGICK
+  SetupStore("ImgTreeDepth",    wetterSetup.w_treedepth);
 #endif
+
+  SetupStore("ID1",		wetterSetup.w_id1);
+  SetupStore("ID2",		wetterSetup.w_id2);
+  SetupStore("ID3",		wetterSetup.w_id3);
+  SetupStore("ID1_NAME",	wetterSetup.w_id1_name);
+  SetupStore("ID2_NAME",	wetterSetup.w_id2_name);
+  SetupStore("ID3_NAME",	wetterSetup.w_id3_name);
+
+
 }
 
         

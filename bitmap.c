@@ -2,22 +2,30 @@
  * borrowed from vdr-text2skin
  */
 
-#include "bitmap.h"
-#include "quantize.h"
-#include "setup.h"
-#include <vdr/tools.h>
+
+#ifndef X_DISPLAY_MISSING
 #define X_DISPLAY_MISSING
-#ifdef HAVE_IMLIB2
-#include <Imlib2.h>
 #endif
-#ifdef HAVE_MAGICK
+
+#ifdef USE_MAGICK
+#include "setup.h"
 #include <Magick++.h>
 using namespace Magick;
+#else
+#include <stddef.h>
+#include <Imlib2.h>
 #endif
 #include <glob.h>
 
-#ifdef HAVE_MAGICK
-cBitmapCache cWeatherBitmap::mCache(wetterSetup.w_maxcachefill);
+#include <vdr/tools.h>
+
+#include "bitmap.h"
+#include "quantize.h"
+
+
+
+#ifdef USE_MAGICK
+cBitmapCache cWeatherBitmap::mCache(1024);
 #else
 cBitmapCache cWeatherBitmap::mCache(1);
 #endif
@@ -36,13 +44,13 @@ void cBitmapCache::ResetObject(cWeatherBitmap *&Data)
 cWeatherBitmap *cWeatherBitmap::Load(const std::string &Filename, int Alpha, int height, 
                                          int width, int colors, bool Quiet) {
 	tBitmapSpec spec(Filename, Alpha, height, width, colors);
-//	printf("checking image with spec %s_%d_%d_%d_%d..\n", Filename.c_str(),Alpha,height,width,colors);
+	printf("checking image with spec %s_%d_%d_%d_%d..", Filename.c_str(),Alpha,height,width,colors);
 	std::string fname = Filename;
 
 	cWeatherBitmap *res = NULL;
 	if (mCache.Contains(spec)) {
 		res = mCache[spec];
-//		printf("..cache ok\n");
+		printf("..cache ok\n");
 	} else {
 		int pos;
 		if ((pos = fname.find('*')) != -1) {
@@ -61,18 +69,22 @@ cWeatherBitmap *cWeatherBitmap::Load(const std::string &Filename, int Alpha, int
 
 		res = new cWeatherBitmap;
 		bool result = false;
-#ifdef HAVE_IMLIB2
-		result = res->LoadImlib(fname.c_str(),height,width,colors, Quiet);
-#else
-#ifdef HAVE_MAGICK
+
+
+#ifdef USE_MAGICK
 		result = res->LoadMagick(fname.c_str(),height,width,colors, Quiet);
+#else
+		result = res->LoadImlib(fname.c_str(),height,width,colors, Quiet);
 #endif
-#endif
-//		printf("..load %sok\n", result ? "" : "not ");
-		if (result)
-			res->SetAlpha(Alpha);
-		else
-			DELETENULL(res);
+	        printf("..load %sok\n", result ? "" : "not ");
+
+		if (result) {
+		  res->SetAlpha(Alpha);
+		  }
+		else {
+		  esyslog("weatherng-image: ERROR: filename %s too short to identify format", fname.c_str());
+		  DELETENULL(res);
+		}	
 		mCache[spec] = res;
 	}
 	return res;
@@ -145,7 +157,11 @@ void cWeatherBitmap::SetAlpha(int Alpha) {
 	}
 }
 
-#ifdef HAVE_MAGICK
+
+
+#ifdef USE_MAGICK
+extern cWetterSetup wetterSetup;
+
 bool cWeatherBitmap::LoadMagick(const char *Filename, int height, int width, int colors, bool Quiet) {
   std::string geometry;
   std::vector<Image> images;
@@ -154,27 +170,25 @@ bool cWeatherBitmap::LoadMagick(const char *Filename, int height, int width, int
   try {
     int w, h;
     std::vector<Image>::iterator it;
-
     readImages(&images, Filename);
 
     if(images.size() == 0)	{
-      esyslog("weatherng-image: Couldn't load %s", Filename);
+      esyslog("weatherng-image: ERROR: images.size == NULL . could not load %s", Filename);
       return false;
     }
 
     printf("weatherng-image: load image %s\n", Filename);
 
     geometry = Geometry(width,height);
-    geometry = geometry + "!";
 
     for (it =images.begin(); it !=images.end(); ++it) {
       if (height != 0 || width != 0) {
-
         (*it).sample(geometry);
       }  
+
       if (colors != 0){
         (*it).magick("RGB");
-        (*it).quantizeTreeDepth(wetterSetup.w_treedepth);
+	(*it).quantizeTreeDepth(wetterSetup.w_treedepth);
         (*it).opacity(OpaqueOpacity);
         (*it).backgroundColor( Color ( 0,0,0,0) );
         (*it).quantizeColorSpace( RGBColorspace );
@@ -213,10 +227,8 @@ bool cWeatherBitmap::LoadMagick(const char *Filename, int height, int width, int
 
   return true;
 }
-#endif
 
-
-#ifdef HAVE_IMLIB2
+#else
 bool cWeatherBitmap::LoadImlib(const char *Filename, int height, int width, int colors, bool Quiet) {
   Imlib_Image buffer;
   int h,w;
@@ -224,6 +236,8 @@ bool cWeatherBitmap::LoadImlib(const char *Filename, int height, int width, int 
   unsigned int * outputPalette = NULL;
   cQuantizeWu* quantizer = new cQuantizeWu();
   cBitmap *bmp = NULL;
+
+  printf("weatherng-image: Loading '%s' with parameters: h:'%i' w:'%i' colors:'%i'\n", Filename, height, width, colors);
   
   buffer = imlib_load_image(Filename);
 
@@ -231,10 +245,13 @@ bool cWeatherBitmap::LoadImlib(const char *Filename, int height, int width, int 
   w= imlib_image_get_width();
   h= imlib_image_get_height();
   imlib_context_set_image(buffer);
-
-  if (!buffer)
+	
+  if (!buffer) {
+    esyslog("weatherng-image: ERROR: buffer empty. ...aborting!");
+    delete(quantizer);
     return false;
-
+  }
+  
   Imlib_Image image;
   image = imlib_create_cropped_scaled_image(0, 0, w, h ,width , height);
 
@@ -245,7 +262,7 @@ bool cWeatherBitmap::LoadImlib(const char *Filename, int height, int width, int 
   w= imlib_image_get_width();
   h= imlib_image_get_height();
   imlib_context_set_image(image);
-
+	
   bmp = new cBitmap(w, h, 8);
   uint8_t *data = (uint8_t*)imlib_image_get_data_for_reading_only();
 
@@ -274,6 +291,5 @@ bool cWeatherBitmap::LoadImlib(const char *Filename, int height, int width, int 
   delete(quantizer);
   return true;
 }
+
 #endif
-
-

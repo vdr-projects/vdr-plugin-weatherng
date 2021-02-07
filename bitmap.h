@@ -2,8 +2,8 @@
  * Borrowed from vdr-text2skin
  */
 
-#ifndef VDR_WEATHERBITMAP_H
-#define VDR_WEATHERBITMAP_H
+#ifndef BITMAP_H
+#define BITMAP_H
 
 #include "imagecache.h"
 #include <vdr/osd.h>
@@ -85,17 +85,16 @@ public:
 	cBitmap &Get(void);
 	void SetColor(int Index, tColor Color);
 	void SetAlpha(int Alpha);
-#ifdef HAVE_IMLIB2
+
+#ifdef USE_MAGICK
+	bool LoadMagick(const char *Filename,int height, int width, int colors, bool Quiet);
+#else
 	bool LoadImlib(const char *Filename,int height, int width, int colors, bool Quiet);
 #endif
-#ifdef HAVE_MAGICK
-	bool LoadMagick(const char *Filename,int height, int width, int colors, bool Quiet);
-#endif
-
 };
 
 inline void cWeatherBitmap::SetColor(int Index, tColor Color) {
 	mBitmaps[mCurrent]->SetColor(Index, Color);
 }
 
-#endif // VDR_WEATHERBITMAP_H
+#endif // BITMAP_H
