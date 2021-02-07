@@ -17,11 +17,11 @@
         }
 
 static std::vector<std::string> context;
-bool locked,IsDay,IsWind;
+bool locked,IsDay,IsWind,IsUV;
 int dpart=0;
 int count=0;
 std::string param[255][255][2];
-std::string ipart,day,date,town,unit1,unit2;
+std::string ipart,day,date,town,unit1,unit2,hmid,uv;
 
 bool xStartElem(const std::string &name, std::map<std::string, std::string> &attrs) {
 	if (name=="part"){
@@ -37,10 +37,13 @@ bool xStartElem(const std::string &name, std::map<std::string, std::string> &att
         if ( name=="us" || name=="ut" || name=="sunr" || name=="suns" || name=="icon" || name=="dnam" || name=="hi" || name=="low" || name=="ppcp" || name=="hmid" || name=="t" || name=="s") {
                 locked=false;
         }
-
 	if (name=="wind"){
 		locked=false;
 		IsWind=true;
+	}
+	if (name=="uv"){
+		locked=false;
+		IsUV=true;
 	}
 	if(name=="day"){
 		if (++count < 255) {
@@ -79,12 +82,13 @@ bool xCharData(const std::string &text) {
                         param[count][3][0]=text.c_str();
                 	param[count][3][1]=text.c_str();
 		}
-		if (context[context.size() -1]=="hmid" && IsDay==true){
-			param[count][10][dpart]=text.c_str();
-		}
-		if (context[context.size() -1]=="ppcp" && IsDay==true){
-			param[count][11][dpart]=text.c_str();
-		}
+//		if (context[context.size()-1]=="hmid" && IsDay==true){
+//                        dsyslog("DEBUG : weatherng: hmid: %s\n",text.c_str());
+//			param[count][10][dpart]=text.c_str();
+//		}
+//		if (context[context.size()-1]=="ppcp" && IsDay==true){
+//			param[count][11][dpart]=text.c_str();
+//		}
 
 	} // if(context.size()>0 ) {
 	if (locked==false){
@@ -102,6 +106,13 @@ bool xCharData(const std::string &text) {
                         dsyslog("DEBUG : weatherng: unit 2: %s\n",text.c_str());
 			unit2=text.c_str();
                 }
+		if (context[context.size()-1]=="hmid"){
+                        dsyslog("DEBUG : weatherng: hmid: %s\n",text.c_str());
+			hmid=text.c_str();
+		}
+		if (context[context.size()-1]=="i" && IsUV==true){
+			uv=text.c_str();
+		}
 
 		if (context[context.size()-1]=="sunr"){
 			param[count][0][0]= text.c_str();
@@ -133,6 +144,10 @@ bool xEndElem(const std::string &name) {
 		locked= true;
 		IsWind=false;
 	}
+	if (context[context.size()-1]=="uv"){
+		locked= true;
+		IsUV=false;
+	}
 
 	if (context.size()>0){
 		context.pop_back();   
@@ -155,6 +170,8 @@ void cxmlParse::xmlParse(int daycount, std::string DataDir, std::string data_fil
 			cxmlParse::ort=town.c_str();
 			cxmlParse::celsius=unit1.c_str();
 			cxmlParse::speed=unit2.c_str();
+			cxmlParse::humidity=hmid.c_str();
+			cxmlParse::raindown=uv.c_str();
 			cxmlParse::sunrise=param[daycount][0][inDPart].c_str();
 			cxmlParse::sunset=param[daycount][1][inDPart].c_str();
 			cxmlParse::hi=param[daycount][2][inDPart].c_str();
@@ -166,8 +183,8 @@ void cxmlParse::xmlParse(int daycount, std::string DataDir, std::string data_fil
 
 			cxmlParse::winddir=param[daycount][8][inDPart].c_str();
 			cxmlParse::windspeed=param[daycount][9][inDPart].c_str();
-			cxmlParse::humidity=param[daycount][10][inDPart].c_str();
-			cxmlParse::raindown=param[daycount][11][inDPart].c_str();
+//			cxmlParse::humidity=param[daycount][10][inDPart].c_str();
+//			cxmlParse::raindown=param[daycount][11][inDPart].c_str();
 			
 	}
 }

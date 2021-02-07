@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <stdlib.h>
 
 template<class key_type, class data_type>
 class cxCache {

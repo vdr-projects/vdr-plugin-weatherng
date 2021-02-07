@@ -7,190 +7,146 @@ msgid ""
 msgstr ""
 "Project-Id-Version: VDR 1.5.7\n"
 "Report-Msgid-Bugs-To: <djoimania.de>\n"
-"POT-Creation-Date: 2008-01-15 22:39+0100\n"
-"PO-Revision-Date: 2008-01-15 22:39+0100\n"
-"Last-Translator: Vyacheslav Dikonov <sdiconov@mail.ru>\n"
+"POT-Creation-Date: 2017-03-29 23:23+1000\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
 "Language-Team: <vdr@linuxtv.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ISO-8859-5\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: OsdWeather.c:191
 msgid "Night"
-msgstr "������!"
+msgstr "Ночь"
 
-#: OsdWeather.c:193
 msgid "Day"
-msgstr "������!"
+msgstr "День"
 
-#: OsdWeather.c:195
 msgid "Refresh"
-msgstr ""
+msgstr "Обновить"
 
-#: OsdWeather.c:197
 msgid "Radar"
-msgstr ""
+msgstr "Карта"
 
-#: OsdWeather.c:199
 msgid "More.."
-msgstr ""
+msgstr "Ещё.."
 
-#: OsdWeather.c:209
 msgid "Parent.."
-msgstr ""
+msgstr "Назад.."
 
-#: OsdWeather.c:440
 msgid "High temperature: "
-msgstr "������!"
+msgstr "Большая темп.: "
 
-#: OsdWeather.c:446
 msgid "Low temperature: "
-msgstr "������!"
+msgstr "Меньшая темп.: "
 
-#: OsdWeather.c:452
 msgid "Wind comes from: "
-msgstr "������!"
+msgstr "Направление ветра: "
 
-#: OsdWeather.c:456
 msgid "Wind speed: "
-msgstr "������!"
+msgstr "Скорость ветра: "
 
-#: OsdWeather.c:462
-msgid "Humitidy: "
-msgstr "������!"
+msgid "Humidity: "
+msgstr "Влажность: "
 
-#: OsdWeather.c:464 OsdWeather.c:469
-msgid " %"
-msgstr "������!"
-
-#: OsdWeather.c:467
 msgid "Precipitation: "
-msgstr "������!"
+msgstr "Вероятность осадков: "
 
-#: OsdWeather.c:474
+msgid " %"
+msgstr ""
+
 msgid "DAY"
-msgstr "������!"
+msgstr "ДЕНЬ"
 
-#: OsdWeather.c:476 OsdWeather.c:501
 msgid "On  "
-msgstr ""
+msgstr "На "
 
-#: OsdWeather.c:478 OsdWeather.c:503
 msgid "in "
-msgstr ""
+msgstr "в "
 
-#: OsdWeather.c:479
 msgid " dayover"
-msgstr ""
+msgstr " днём"
 
-#: OsdWeather.c:486 OsdWeather.c:510
 msgid "The temperature varies between  "
-msgstr ""
+msgstr "Температура меняется между "
 
-#: OsdWeather.c:487 OsdWeather.c:511
 msgid "  and  "
-msgstr ""
+msgstr " и "
 
-#: OsdWeather.c:488 OsdWeather.c:512
 msgid "  Grad"
-msgstr ""
+msgstr " Град"
 
-#: OsdWeather.c:491 OsdWeather.c:515
 msgid "The sun comes up at  "
-msgstr ""
+msgstr "Восход солнца "
 
-#: OsdWeather.c:492 OsdWeather.c:516
 msgid " and goes at  "
-msgstr ""
+msgstr " и в "
 
-#: OsdWeather.c:493 OsdWeather.c:517
 msgid " down"
-msgstr ""
+msgstr " заход"
 
-#: OsdWeather.c:499
 msgid "NIGHT"
-msgstr "������!"
+msgstr "НОЧЬ"
 
-#: OsdWeather.c:504
 msgid " nightover"
-msgstr ""
+msgstr " ночью"
 
-#: OsdWeather.c:524
 msgid "Weather for: "
-msgstr "������!"
+msgstr "Погода для: "
 
-#: weatherng.c:22
 msgid "Weather.com: Weather forecast"
-msgstr "������!"
+msgstr "Погода в мире"
 
-#: weatherng.c:23
 msgid "Weather-NG"
-msgstr "������!"
+msgstr "Погода"
 
-#: weatherng.c:212
 msgid "Update data on start"
-msgstr "������!"
+msgstr "Обновлять при старте"
 
-#: weatherng.c:213
 msgid "Use one 8-bit area"
-msgstr ""
+msgstr "8-битная зона"
 
-#: weatherng.c:214
 msgid "Radarbitmap left"
-msgstr "������!"
+msgstr "Карта слева"
 
-#: weatherng.c:215
 msgid "Radarbitmap top"
-msgstr "������!"
+msgstr "Карта сверху"
 
-#: weatherng.c:218 weatherng.c:223
 msgid "Radarbitmap width"
-msgstr "������!"
+msgstr "Карта длина"
 
-#: weatherng.c:219 weatherng.c:224
 msgid "Radarbitmap height"
-msgstr "������!"
+msgstr "Карта высота"
 
-#: weatherng.c:226
 msgid "Offset horizontal"
-msgstr "������!"
+msgstr "Смещение гориз."
 
-#: weatherng.c:227
 msgid "Offset vertical"
-msgstr "������!"
+msgstr "Смещение верт."
 
-#: weatherng.c:228
 msgid "Use dithering for images"
-msgstr "������!"
+msgstr "Использовать сглаживание"
 
-#: weatherng.c:229
 msgid "Transparency for images"
-msgstr "������!"
+msgstr "Прозрачность картинок"
 
-#: weatherng.c:231
 msgid "Image quality >=slower"
-msgstr "������!"
+msgstr "Качество >=низкое"
 
-#: weatherng.c:234
 msgid "Location 1 (ID)"
-msgstr ""
+msgstr "Местность 1 (ID)"
 
-#: weatherng.c:235
 msgid "Location 1 (Name)"
-msgstr ""
+msgstr "Местность 2 (Name)"
 
-#: weatherng.c:236
 msgid "Location 2 (ID)"
-msgstr ""
+msgstr "Местрность 2 (ID)"
 
-#: weatherng.c:237
 msgid "Location 2 (Name)"
-msgstr ""
+msgstr "Местность 2 (Name)"
 
-#: weatherng.c:238
 msgid "Location 3 (ID)"
-msgstr ""
+msgstr "Местность 3 (ID)"
 
-#: weatherng.c:239
 msgid "Location 3 (Name)"
-msgstr ""
+msgstr "Местность 3 (Name)"

@@ -459,9 +459,9 @@ void cWetterOsd::Show(void)
       ausgabe = ausgabe + parser.speed.c_str();
       osd->DrawText(cw -1 -5 -CELLWIDTH , 2*fh +1 +5 +4*fh, ausgabe.c_str(), clrDateFG,clrBG2,font,CELLWIDTH,20,taRight);
 
-      osd->DrawText(fh +10, 2*fh +1 +5 +5*fh, tr("Humitidy: "), clrDateFG,clrBG2,font);
+      osd->DrawText(fh +10, 2*fh +1 +5 +5*fh, tr("Humidity: "), clrDateFG,clrBG2,font);
       ausgabe = parser.humidity.c_str();
-      ausgabe = ausgabe + tr(" %");
+      ausgabe = ausgabe/* + tr(" %")*/;
       osd->DrawText(cw -1 -5 -CELLWIDTH , 2*fh +1 +5 +5*fh, ausgabe.c_str(), clrDateFG,clrBG2,font,CELLWIDTH,20,taRight);
 
       osd->DrawText(fh +10, 2*fh +1 +5 +6*fh, tr("Precipitation: "), clrDateFG,clrBG2,font);
@@ -647,8 +647,8 @@ eOSState cWetterOsd::ProcessKey(eKeys Key)
 			  }
                         else {
                 	    day++;
-              		    if (day>10){
-                	      day=10;
+              		    if (day>9){
+                	      day=9;
                 	    }
 			    cWetterOsd::Show();
 			}    
