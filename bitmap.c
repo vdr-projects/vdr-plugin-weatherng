@@ -8,9 +8,11 @@
 #endif
 
 #ifdef USE_MAGICK
+#include "setup.h"
 #include <Magick++.h>
 using namespace Magick;
 #else
+#include <stddef.h>
 #include <Imlib2.h>
 #endif
 #include <glob.h>
@@ -158,6 +160,8 @@ void cWeatherBitmap::SetAlpha(int Alpha) {
 
 
 #ifdef USE_MAGICK
+extern cWetterSetup wetterSetup;
+
 bool cWeatherBitmap::LoadMagick(const char *Filename, int height, int width, int colors, bool Quiet) {
   std::string geometry;
   std::vector<Image> images;

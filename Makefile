@@ -50,7 +50,9 @@ PACKAGE = vdr-$(ARCHIVE)
 
 ifdef   USE_MAGICK
 	DEFINES += -DUSE_MAGICK
-	LIBS += -lMagick -lMagick++
+#	LIBS += -lMagick -lMagick++
+	LIBS += $(shell pkg-config --libs Magick++)
+	INCLUDES += $(shell pkg-config --cflags-only-I Magick++)
 else
 	DEFINES += -DUSE_IMLIB2
 	LIBS += -lImlib2

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ## convert to xpm
 
 convert pic0 pic0.xpm
