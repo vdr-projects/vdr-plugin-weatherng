@@ -215,8 +215,8 @@ cMenuWetterSetup::cMenuWetterSetup(void)
   Add(new cMenuEditIntItem(tr("Radarbitmap top"),                  &wetterSetup.w_top, 1, 200));
   if(wetterSetup.w_hiquality) {
     // 4 MB FF-CARD
-    Add(new cMenuEditIntItem(tr("Radarbitmap width"),              &wetterSetup.w_width, 100, 672));
-    Add(new cMenuEditIntItem(tr("Radarbitmap height"),             &wetterSetup.w_height, 100, 567));
+    Add(new cMenuEditIntItem(tr("Radarbitmap width"),              &wetterSetup.w_width, 100, 1900));
+    Add(new cMenuEditIntItem(tr("Radarbitmap height"),             &wetterSetup.w_height, 100, 1000));
     }
   else {
     // 2 MB FF-CARD

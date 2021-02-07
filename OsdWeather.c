@@ -21,6 +21,8 @@
 #define FALSE 0
 #define BOOL int
 
+#define DAY 7
+
 static int if_exist_file( const char *filename) {
   FILE *f = fopen( filename, "r" );
   if( f != NULL ) {
@@ -217,7 +219,7 @@ void cWetterOsd::ShowStatusButtons(int ShowButtons)
 void cWetterOsd::SetVars(void)
 {
   fw = 6;
-  fh = 26;
+  fh = 36;
 
   cw = ( Setup.OSDWidth -   (fh +8 +196 +8));
   cw = cw & ~0x07;
@@ -441,57 +443,57 @@ void cWetterOsd::Show(void)
       ausgabe = parser.hi.c_str();
       ausgabe = ausgabe + " ";
       ausgabe = ausgabe + tr(parser.celsius.c_str());
-      osd->DrawText(cw -1 -5 -CELLWIDTH, 2*fh +1 +5, ausgabe.c_str(), clrHighFG,clrBG2,font,CELLWIDTH,20,taRight);
+      osd->DrawText(cw -1 -5 -CELLWIDTH, 2*fh +1 +5, ausgabe.c_str(), clrHighFG,clrBG2,font,CELLWIDTH,fh,taRight);
 
       osd->DrawText(fh +10, 2*fh +1 +5 +fh, tr("Low temperature: "), clrDateFG,clrBG2,font);
       ausgabe = parser.low.c_str();
       ausgabe = ausgabe + " ";
       ausgabe = ausgabe + tr(parser.celsius.c_str());
-      osd->DrawText(cw -1 -5 -CELLWIDTH, 2*fh +1 +5 +fh, ausgabe.c_str(), clrDateFG,clrBG2,font,CELLWIDTH,20,taRight);
+      osd->DrawText(cw -1 -5 -CELLWIDTH, 2*fh +1 +5 +fh, ausgabe.c_str(), clrDateFG,clrBG2,font,CELLWIDTH,fh,taRight);
 
-      osd->DrawText(fh +10, 2*fh +1 +5 +3*fh, tr("Wind comes from: "), clrDateFG,clrBG2,font);
+      osd->DrawText(fh +10, 2*fh +1 +5 +2*fh, tr("Wind comes from: "), clrDateFG,clrBG2,font);
       ausgabe = parser.winddir.c_str();
-      osd->DrawText(cw -1 -5 -CELLWIDTH , 2*fh +1 +5 +3*fh, ausgabe.c_str(), clrDateFG,clrBG2,font,CELLWIDTH,20,taRight);
+      osd->DrawText(cw -1 -5 -CELLWIDTH , 2*fh +1 +5 +2*fh, ausgabe.c_str(), clrDateFG,clrBG2,font,CELLWIDTH,fh,taRight);
 
-      osd->DrawText(fh +10, 2*fh +1 +5 +4*fh, tr("Wind speed: "), clrDateFG,clrBG2,font);
+      osd->DrawText(fh +10, 2*fh +1 +5 +3*fh, tr("Wind speed: "), clrDateFG,clrBG2,font);
       ausgabe = parser.windspeed.c_str();
       ausgabe = ausgabe + " ";
       ausgabe = ausgabe + parser.speed.c_str();
-      osd->DrawText(cw -1 -5 -CELLWIDTH , 2*fh +1 +5 +4*fh, ausgabe.c_str(), clrDateFG,clrBG2,font,CELLWIDTH,20,taRight);
+      osd->DrawText(cw -1 -5 -CELLWIDTH , 2*fh +1 +5 +3*fh, ausgabe.c_str(), clrDateFG,clrBG2,font,CELLWIDTH,fh,taRight);
 
-      osd->DrawText(fh +10, 2*fh +1 +5 +5*fh, tr("Humidity: "), clrDateFG,clrBG2,font);
+      osd->DrawText(fh +10, 2*fh +1 +5 +4*fh, tr("Humidity: "), clrDateFG,clrBG2,font);
       ausgabe = parser.humidity.c_str();
       ausgabe = ausgabe/* + tr(" %")*/;
-      osd->DrawText(cw -1 -5 -CELLWIDTH , 2*fh +1 +5 +5*fh, ausgabe.c_str(), clrDateFG,clrBG2,font,CELLWIDTH,20,taRight);
+      osd->DrawText(cw -1 -5 -CELLWIDTH , 2*fh +1 +5 +4*fh, ausgabe.c_str(), clrDateFG,clrBG2,font,CELLWIDTH,fh,taRight);
 
-      osd->DrawText(fh +10, 2*fh +1 +5 +6*fh, tr("Precipitation: "), clrDateFG,clrBG2,font);
+      osd->DrawText(fh +10, 2*fh +1 +5 +5*fh, tr("Precipitation: "), clrDateFG,clrBG2,font);
       ausgabe = parser.raindown.c_str();
       ausgabe = ausgabe + tr(" %");
-      osd->DrawText(cw -1 -5 -CELLWIDTH , 2*fh +1 +5 +6*fh, ausgabe.c_str(), clrDateFG,clrBG2,font,CELLWIDTH,20,taRight);
+      osd->DrawText(cw -1 -5 -CELLWIDTH , 2*fh +1 +5 +5*fh, ausgabe.c_str(), clrDateFG,clrBG2,font,CELLWIDTH,fh,taRight);
 
 
       if (part==0) {
-        osd->DrawText( 10, 0, tr("DAY"), clrIconFG, clrTopBG,font,osdwidth -20,20,taCenter);
+        osd->DrawText( 10, 0, tr("DAY"), clrIconFG, clrTopBG,font,osdwidth -fh,fh,taCenter);
 
         ausgabe = tr("On  ");
         ausgabe = ausgabe + tr(parser.dayname.c_str()) + " " + parser.date + "  ";
         ausgabe = ausgabe + tr("in ");
         ausgabe = ausgabe + parser.ort.c_str() + tr(" dayover");
 
-        osd->DrawText( fh +10, 2*fh +8 +196 +9 +16, ausgabe.c_str(), clrTextFG, clrBG2,font, (osdwidth -2*fh -15) ,20,taLeft);
+        osd->DrawText( fh +10, 3*fh +1 +5 +6*fh, ausgabe.c_str(), clrTextFG, clrBG2,font, (osdwidth -2*fh -15) ,fh,taLeft);
 
         ausgabe = parser.wetter;
-        osd->DrawText( fh +10, 3*fh +8 +196 +9 +16, tr(ausgabe.c_str()), clrTextFG, clrBG2,font, (osdwidth -2*fh -15) ,20,taLeft);
+        osd->DrawText( fh +10, 4*fh +1 +5 +6*fh, tr(ausgabe.c_str()), clrTextFG, clrBG2,font, (osdwidth -2*fh -15) ,fh,taLeft);
 
         ausgabe = tr("The temperature varies between  ");
         ausgabe = ausgabe + parser.hi.c_str() + tr("  and  ");
         ausgabe = ausgabe + parser.low.c_str() + tr("  Grad");
-        osd->DrawText( fh +10, 4*fh +8 +196 +9 +16, ausgabe.c_str(), clrTextFG, clrBG2,font, (osdwidth -2*fh -15) ,20,taLeft);
+        osd->DrawText( fh +10, 5*fh +1 +5 +6*fh, ausgabe.c_str(), clrTextFG, clrBG2,font, (osdwidth -2*fh -15) ,fh,taLeft);
 
         ausgabe = tr("The sun comes up at  ");
         ausgabe = ausgabe + parser.sunrise.c_str() + tr(" and goes at  ");
         ausgabe = ausgabe + parser.sunset.c_str() + tr(" down");
-        osd->DrawText( fh +10, 5*fh +8 +196 +9 +16, ausgabe.c_str(), clrTextFG, clrBG2,font, (osdwidth -2*fh -15) ,20,taLeft);
+        osd->DrawText( fh +10, 6*fh +1 +5 +6*fh, ausgabe.c_str(), clrTextFG, clrBG2,font, (osdwidth -2*fh -15) ,fh,taLeft);
       }
 
       if (part==1) {
@@ -502,20 +504,20 @@ void cWetterOsd::Show(void)
         ausgabe = ausgabe + tr(parser.dayname.c_str()) + " " + parser.date + "  ";
         ausgabe = ausgabe + tr("in ");
         ausgabe = ausgabe + parser.ort.c_str() + tr(" nightover");
-        osd->DrawText( fh +10, 2*fh +8 +196 +9 +16, ausgabe.c_str(), clrTextFG, clrBG2,font, (osdwidth -2*fh -15) ,20,taLeft);
+        osd->DrawText( fh +10, 3*fh +1 +5 +6*fh, ausgabe.c_str(), clrTextFG, clrBG2,font, (osdwidth -2*fh -15) ,20,taLeft);
 
         ausgabe = parser.wetter;
-        osd->DrawText( fh +10, 3*fh +8 +196 +9 +16, tr(ausgabe.c_str()), clrTextFG, clrBG2,font, (osdwidth -2*fh -15) ,20,taLeft);
+        osd->DrawText( fh +10, 4*fh +1 +5 +6*fh, tr(ausgabe.c_str()), clrTextFG, clrBG2,font, (osdwidth -2*fh -15) ,20,taLeft);
 
         ausgabe = tr("The temperature varies between  ");
         ausgabe = ausgabe + parser.hi.c_str() + tr("  and  ");
         ausgabe = ausgabe + parser.low.c_str() + tr("  Grad");
-        osd->DrawText( fh +10, 4*fh +8 +196 +9 +16, ausgabe.c_str(), clrTextFG, clrBG2,font, (osdwidth -2*fh -15) ,20,taLeft);
+        osd->DrawText( fh +10, 5*fh +1 +5 +6*fh, ausgabe.c_str(), clrTextFG, clrBG2,font, (osdwidth -2*fh -15) ,20,taLeft);
 
         ausgabe = tr("The sun comes up at  ");
         ausgabe = ausgabe + parser.sunrise.c_str() + tr(" and goes at  ");
         ausgabe = ausgabe + parser.sunset.c_str() + tr(" down");
-        osd->DrawText( fh +10, 5*fh +8 +196 +9 +16, ausgabe.c_str(), clrTextFG, clrBG2,font, (osdwidth -2*fh -15) ,20,taLeft);
+        osd->DrawText( fh +10, 6*fh +1 +5 +6*fh, ausgabe.c_str(), clrTextFG, clrBG2,font, (osdwidth -2*fh -15) ,20,taLeft);
       }
 
 
@@ -647,8 +649,8 @@ eOSState cWetterOsd::ProcessKey(eKeys Key)
 			  }
                         else {
                 	    day++;
-              		    if (day>9){
-                	      day=9;
+              		    if (day>DAY){
+                	      day=DAY;
                 	    }
 			    cWetterOsd::Show();
 			}    

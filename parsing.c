@@ -181,8 +181,8 @@ void cxmlParse::xmlParse(int daycount, std::string DataDir, std::string data_fil
 			cxmlParse::dayname=param[daycount][6][inDPart].c_str();
 			cxmlParse::date=param[daycount][7][inDPart].c_str();
 
-			cxmlParse::winddir=param[daycount][8][inDPart].c_str();
-			cxmlParse::windspeed=param[daycount][9][inDPart].c_str();
+//			cxmlParse::winddir=param[daycount][8][inDPart].c_str();
+//			cxmlParse::windspeed=param[daycount][9][inDPart].c_str();
 //			cxmlParse::humidity=param[daycount][10][inDPart].c_str();
 //			cxmlParse::raindown=param[daycount][11][inDPart].c_str();
 			

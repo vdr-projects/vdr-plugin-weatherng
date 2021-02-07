@@ -84,11 +84,12 @@ echo "$LANG----${IMGS[$i]}---" >> /var/log/syslog
     wget $WGETOPT "${IMGS[$i]}" -O "$SETUPDIR/plugins/weatherng/pic${i}"
 done
 
+l=`echo $LANG|cut -f 1 -d '_'`
 c=0
 for i in $@ ; do
     c=$((c+1))
     case $i in
-	 *|*) wget $WGETOPT "http://samsungmobile.accu-weather.com/widget/samsungmobile/weather-data.asp?location=$i&metric=1&language=ru" \
+	 *|*) wget $WGETOPT "http://samsungmobile.accu-weather.com/widget/samsungmobile/weather-data.asp?location=$i&metric=1&language=$l" \
 		-O "$SETUPDIR/plugins/weatherng/data$c.xml"
 	      xsltproc \
 		-o "$SETUPDIR/plugins/weatherng/"{data$c.xml,accu.xslt,data$c.xml}
